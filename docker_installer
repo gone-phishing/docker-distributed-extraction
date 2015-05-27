@@ -39,6 +39,8 @@ elif [[ $platform == 'linux' ]]; then
     if [ $vclient -eq "1" ]; then
       if [ $vserver -eq "1" ]; then
         echo "--> Docker already installed"
+        # echo "--> Updating Docker"
+        # wget -N https://get.docker.com/ | sh
         docker version
         exit
       fi
@@ -62,7 +64,49 @@ elif [[ $platform == 'linux' ]]; then
     else
       echo "Kernel version found: "
       uname -r
+      username=$(uname -n)
       echo "Proceeding to install Docker"
+      # Install wget :
+      sudo apt-get update
+      sudo apt-get install wget
+      # Install dependencies (Not installed in a few linux distributions):
+      sudo apt-get install apparmor
+      sudo apt-get install lxc
+      #Get the latest Docker package
+      wget -qO- https://get.docker.com/ | sh
+      # Verify installations :
+      sudo docker run hello-world
+      echo "Do you want to create a separate Docker group (y or n) : "
+      flag=1 # To check for a valid response
+      while [ $flag -eq "1" ]
+      do
+        read resp
+        if ([ resp -eq "y" ] || [ resp -eq "Y" ]); then
+        # Making the Docker group and adding users to it (Docker group is equivalent to the root user)
+        sudo usermod -aG docker $username
+        flag=0
+        echo "Group added. Log out and log back in after installation for changes to take place!"
+        elif ([ resp -eq "n" ] || [ resp -eq "N" ]); then
+        echo "You need to run all docker commands with sudo permissions"
+        flag=0
+        else
+          echo "Enter a valid choice: "
+        fi
+      done
+
+      # Adjust memory and swap accounting
+        # Edit the /etc/default/grub file and set GRUB_CMDLINE_LINUX value
+
+      # Enable UFW forwarding
+      sudo apt-get install ufw
+      ufw_status=$(sudo ufw status | grep Status | cut -d':' -f2 | cut -d' ' -f2)
+      if [ $ufw_status -eq "inactive" ]; then
+        sudo ufw enable
+        # Edit the /etc/default/ufw file
+      fi
+
+      # Configure DNS server to be used with Docker
+        # Edit the /etc/default/docker file and add the DNS servers
     fi
   fi
 fi
