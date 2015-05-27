@@ -1,0 +1,70 @@
+#!/bin/bash
+
+# if [[ "$OSTYPE" == "linux-gnu" ]]; then
+#         echo "Linux os found"
+# elif [[ "$OSTYPE" == "darwin"* ]]; then
+#         echo "Mac OSX found"
+# elif [[ "$OSTYPE" == "cygwin" ]]; then
+#         echo "POSIX compatibility layer and Linux environment emulation for Windows"
+# elif [[ "$OSTYPE" == "msys" ]]; then
+#         echo "Lightweight shell and GNU utilities compiled for Windows (part of MinGW)"
+# elif [[ "$OSTYPE" == "win32" ]]; then
+#         echo "I'm not sure this can happen."
+# elif [[ "$OSTYPE" == "freebsd"* ]]; then
+#         # ...
+# else
+#         # Unknown.
+# fi
+
+platform='unknown'
+unamestr=$(uname)
+if [[ "$unamestr" == 'Linux' ]]; then
+   platform='linux'
+elif [[ "$unamestr" == 'FreeBSD' ]]; then
+   platform='freebsd'
+fi
+
+if [[ $platform == 'freebsd' ]]; then
+  alias ls='ls -G'
+  echo "FreeBSD distribution found. Install at your own risk"
+  exit
+elif [[ $platform == 'linux' ]]; then
+  echo "--> Linux distribution found"
+  uname -a
+  echo "--> Checking previous Docker installations"
+  vcount=$(docker version | grep -c version)
+  vclient=$(docker version | grep -c "Client version")
+  vserver=$(docker version | grep -c "Server version")
+  if [ $vcount -eq "6" ]; then
+    if [ $vclient -eq "1" ]; then
+      if [ $vserver -eq "1" ]; then
+        echo "--> Docker already installed"
+        docker version
+        exit
+      fi
+    fi
+  else
+    echo "Checking Docker compatibility"
+    vker1=$(uname -r | cut -d'-' -f1 | cut -d'.' -f1)
+    vker2=$(uname -r | cut -d'-' -f1 | cut -d'.' -f2)
+    vk1=3
+    vk2=10
+    if [ $vker1 -lt $vk1 ]; then
+      echo "Kernel version must be atleast 3.10"
+      echo "Your kernel version:"
+      uname -r
+      exit
+    elif [ $vker2 -lt $vk2 ]; then
+      echo "Kernel version must be atleast 3.10"
+      echo "Your kernel version:"
+      uname -r
+      exit
+    else
+      echo "Kernel version found: "
+      uname -r
+      echo "Proceeding to install Docker"
+    fi
+  fi
+fi
+echo "Docker is successfully installed!"
+exit
