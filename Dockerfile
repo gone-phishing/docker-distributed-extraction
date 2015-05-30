@@ -1,5 +1,5 @@
 FROM java:7 
-
+MAINTAINER gonephishing <riteshoneinamillion@gmail.com>
 # Install maven
 RUN apt-get update
 RUN apt-get install -y maven
