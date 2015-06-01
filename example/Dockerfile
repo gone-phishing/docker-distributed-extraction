@@ -16,4 +16,4 @@ ADD src /code/src
 RUN ["mvn", "package"]
 
 EXPOSE 4567
-CMD ["/usr/lib/jvm/java-7-openjdk-amd64/bin/java", "-jar", "target/sparkexample-jar-with-dependencies.jar"]
+CMD ["/usr/lib/jvm/java-7-openjdk-amd64/bin/java", "-jar", "target/sparktest-jar-with-dependencies.jar"]

@@ -1,4 +1,4 @@
-package sparkexample;
+package sparktest;
 
 import static spark.Spark.get;
 
