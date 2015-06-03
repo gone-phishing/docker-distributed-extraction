@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.dbpedia</groupId>
+        <artifactId>extraction</artifactId>
+        <version>4.0-SNAPSHOT</version>
+    </parent>
+
+    <groupId>org.dbpedia.extraction</groupId>
+    <artifactId>core</artifactId>
+    <name>DBpedia Core Libraries</name>
+
+    <build>
+        <plugins>
+            <plugin>
+
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+
+                <configuration>
+                    <launchers>
+                    
+                        <launcher>
+                            <id>download-ontology</id>
+                            <mainClass>org.dbpedia.extraction.util.OntologyDownloader</mainClass>
+                            <args>
+                                <arg>../ontology.xml</arg> 
+                                <arg>../ontology.owl</arg>
+                                <arg>${project.version}</arg>
+                            </args>
+                        </launcher>
+
+                        <launcher>
+                            <id>download-mappings</id>
+                            <mainClass>org.dbpedia.extraction.util.MappingsDownloader</mainClass>
+                            <args>
+                                <arg>../mappings</arg> 
+                            </args>
+                        </launcher>
+
+                        <launcher>
+                            <id>generate-settings</id>
+                            <mainClass>org.dbpedia.extraction.wikiparser.impl.wikipedia.GenerateWikiSettings</mainClass>
+                            <args>
+                                <arg>src/main/settings</arg><!-- wiki config xml files folder -->
+                                <arg>true</arg><!-- download info again and overwrite existing files? -->
+                            </args>
+                        </launcher>
+
+                    </launchers>
+                </configuration>
+
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.4.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.tukaani</groupId>
+                    <artifactId>xz</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_2.11</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <version>4.8.2</version>
+          <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.sweble.wikitext</groupId>
+            <artifactId>swc-engine</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+
+	 <dependency>
+		<groupId>org.wikidata.wdtk</groupId>
+		<artifactId>wdtk-dumpfiles</artifactId>
+		<version>0.2.0</version>
+	 </dependency>	
+	 
+	 <dependency>
+              <groupId>org.wikidata.wdtk</groupId>
+              <artifactId>wdtk-datamodel</artifactId>
+              <version>0.2.0</version>
+         </dependency>
+
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-xml</artifactId>
+        </dependency>
+
+    </dependencies>
+
+</project>
+
