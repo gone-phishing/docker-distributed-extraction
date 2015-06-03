@@ -1,4 +1,4 @@
-FROM sequenceiq/spark:latest
+FROM sequenceiq/spark:1.3.0-ubuntu
 MAINTAINER gonephishing <riteshoneinamillion@gmail.com>
 RUN apt-get update
 RUN apt-get install -y maven
