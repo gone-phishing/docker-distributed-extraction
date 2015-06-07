@@ -27,6 +27,3 @@ RUN ["mvn", "clean"]
 
 # Building the framework
 RUN ["mvn", "install", "-Dmaven.test.skip=true"]
-
-# Verify all packages installed
-RUN ["mvn", "verify"]
