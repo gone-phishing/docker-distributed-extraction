@@ -12,20 +12,23 @@ RUN apt-get update
 # Installing maven v3.2.1
 RUN apt-get install -y maven
 
-#Download extraction framework zip :
+# Download extraction framework zip 
 RUN wget https://github.com/dbpedia/extraction-framework/archive/master.zip
+
+# Unzip the extraction framework files
 RUN unzip master.zip
-#RUN ["cd", "/extraction-framework-master/"]
+
+# Define workdir for installing the extraction framework
 WORKDIR /extraction-framework-master
+
+# Install the extraction framework jars
 RUN ["mvn", "clean", "install"]
-#RUN ["cd", "/"]
+
+# Remove the extraction-framework-master folder to free space on the image
 WORKDIR /
 RUN rm -rf extraction-framework-master/
-# Adding sequential extraction framework jars to the maven directory
-#RUN mkdir -p ~/.m2/repository/org/dbpedia
-#ADD extraction /root/.m2/repository/org/dbpedia/extraction
 
-# Defining work directory on the image being used
+# Defining work directory for the distributed extraction framework
 WORKDIR /code
 
 # Adding the current code base
@@ -36,3 +39,6 @@ RUN ["mvn", "clean"]
 
 # Building the framework
 RUN ["mvn", "install", "-Dmaven.test.skip=true"]
+
+# Success install message
+RUN ["echo", "Image has been successfully built"]
