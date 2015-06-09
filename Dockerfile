@@ -39,6 +39,3 @@ RUN ["mvn", "clean"]
 
 # Building the framework
 RUN ["mvn", "install", "-Dmaven.test.skip=true"]
-
-# Success install message
-RUN ["echo", "Image has been successfully built"]
