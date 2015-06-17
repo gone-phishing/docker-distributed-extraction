@@ -4,8 +4,8 @@ The project aims at creating Docker images for setting up and working with the d
 
 **Building an image from Dockerfile :**
 
-`sudo docker build -t sparkexample .`
+`sudo docker build -t gonephishing/dbpedia .`
 
 **Running the image built :**
 
-`sudo docker run -d -p 4567:4567 sparkexample`
+`sudo docker run -i -t gonephishing/dbpedia /bin/bash`
