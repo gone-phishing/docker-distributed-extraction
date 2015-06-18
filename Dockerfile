@@ -24,15 +24,22 @@ WORKDIR /extraction-framework-master
 # Install the extraction framework jars
 RUN ["mvn", "clean", "install"]
 
-# Remove the extraction-framework-master folder to free space on the image
+# Changing to home directory
 WORKDIR /
+
+# Deleting the extraction framework zip and extracted files
 RUN rm -rf extraction-framework-master/
+RUN rm master.zip
 
-# Defining work directory for the distributed extraction framework
-WORKDIR /code
+# Downloading and extracting the distributed extracted framework zip from github
+RUN wget https://github.com/dbpedia/distributed-extraction-framework/archive/master.zip
+RUN unzip master.zip
 
-# Adding the current code base
-ADD distributed-extraction-framework /code
+# Removing the zip from drive
+RUN rm master.zip
+
+# Defining the work directory for dist-extraction framework
+WORKDIR /distributed-extraction-framework-master
 
 # Cleaning previous builds
 RUN ["mvn", "clean"]
