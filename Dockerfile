@@ -44,5 +44,5 @@ WORKDIR /distributed-extraction-framework-master
 # Cleaning previous builds
 RUN ["mvn", "clean"]
 
-# Building the framework
+# Building the framework (skipping the tests)
 RUN ["mvn", "install", "-Dmaven.test.skip=true"]
