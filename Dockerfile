@@ -46,3 +46,16 @@ RUN ["mvn", "clean"]
 
 # Building the framework (skipping the tests)
 RUN ["mvn", "install", "-Dmaven.test.skip=true"]
+
+# Make directory for main jar
+RUN mkdir -p distributed/target/
+
+# Copy and rename the extraction jar to distribution jar
+RUN cp extraction/target/extraction-4.0-SNAPSHOT.jar distributed/target/
+RUN mv distributed/target/extraction-4.0-SNAPSHOT.jar distributed/target/distributed-4.0-SNAPSHOT.jar 
+
+# Exposing port for host to use
+EXPOSE 12000
+
+# Executing download module to get zip files for li and bn languages
+CMD ["./run", "seq-download", "config=download.properties"]
