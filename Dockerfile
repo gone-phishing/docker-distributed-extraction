@@ -32,14 +32,14 @@ RUN rm -rf extraction-framework-master/
 RUN rm master.zip
 
 # Downloading and extracting the distributed extracted framework zip from github
-RUN wget https://github.com/dbpedia/distributed-extraction-framework/archive/master.zip
-RUN unzip master.zip
+RUN wget https://github.com/gone-phishing/distributed-extraction-framework/archive/spark_1.3.0-update.zip
+RUN unzip spark_1.3.0-update.zip
 
 # Removing the zip from drive
-RUN rm master.zip
+RUN rm spark_1.3.0-update.zip
 
 # Defining the work directory for dist-extraction framework
-WORKDIR /distributed-extraction-framework-master
+WORKDIR /distributed-extraction-framework-spark_1.3.0-update
 
 # Cleaning previous builds
 RUN ["mvn", "clean"]
@@ -58,4 +58,4 @@ RUN mv distributed/target/extraction-4.0-SNAPSHOT.jar distributed/target/distrib
 EXPOSE 12000
 
 # Executing download module to get zip files for li and bn languages
-CMD ["./run", "seq-download", "config=download.properties"]
+RUN ["./run", "seq-download", "config=download/src/test/resources/download.properties"]
