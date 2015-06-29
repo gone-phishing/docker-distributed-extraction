@@ -1,3 +1,6 @@
 .git
 example/
 docker_installer
+aws/
+gce/
+README.md

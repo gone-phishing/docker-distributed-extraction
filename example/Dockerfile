@@ -1,4 +1,4 @@
-FROM java:7
+FROM sequenceiq/spark:1.3.0-ubuntu
 
 # Install maven
 RUN apt-get update
