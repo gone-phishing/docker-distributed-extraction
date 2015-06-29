@@ -1,9 +1,0 @@
-#!/bin/bash
-
-echo "Building the Docker image: "
-sudo docker build -t gonephishing/sparktest .
-echo ""
-echo "==================================================================="
-echo ""
-echo "Running the image: "
-sudo docker run -p 4567:4567 gonephishing/sparktest
