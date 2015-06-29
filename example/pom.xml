@@ -48,13 +48,12 @@
                         </goals>
                         <configuration>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                              <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                   <resource>reference.conf</resource>
-                                </transformer>
-                                <transformer
-                                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>sparkTest.Test</mainClass>
-                                </transformer>
+                              </transformer>
+                              <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                  <mainClass>sparkTest.Test</mainClass>
+                              </transformer>
                             </transformers>
                             <filters>
                                 <filter>
