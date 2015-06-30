@@ -1,20 +1,21 @@
 #!/bin/bash
 
-# if [[ "$OSTYPE" == "linux-gnu" ]]; then
-#         echo "Linux os found"
-# elif [[ "$OSTYPE" == "darwin"* ]]; then
-#         echo "Mac OSX found"
-# elif [[ "$OSTYPE" == "cygwin" ]]; then
-#         echo "POSIX compatibility layer and Linux environment emulation for Windows"
-# elif [[ "$OSTYPE" == "msys" ]]; then
-#         echo "Lightweight shell and GNU utilities compiled for Windows (part of MinGW)"
-# elif [[ "$OSTYPE" == "win32" ]]; then
-#         echo "I'm not sure this can happen."
-# elif [[ "$OSTYPE" == "freebsd"* ]]; then
-#         # ...
-# else
-#         # Unknown.
-# fi
+echo "Checking OS....."
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+        echo "Linux os found"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+        echo "Mac OSX found"
+elif [[ "$OSTYPE" == "cygwin" ]]; then
+        echo "POSIX compatibility layer and Linux environment emulation for Windows"
+elif [[ "$OSTYPE" == "msys" ]]; then
+        echo "Lightweight shell and GNU utilities compiled for Windows (part of MinGW)"
+elif [[ "$OSTYPE" == "win32" ]]; then
+        echo "I'm not sure this can happen."
+elif [[ "$OSTYPE" == "freebsd"* ]]; then
+        echo "FreeBSD distribution found"
+else
+        echo "Failed to detect"
+fi
 
 platform='unknown'
 unamestr=$(uname)

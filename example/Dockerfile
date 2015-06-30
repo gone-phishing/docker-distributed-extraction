@@ -9,7 +9,7 @@ WORKDIR /code
 
 # Add pom file for the project
 ADD pom.xml /code/pom.xml
-
+ADD dependency-reduced-pom.xml /code/dependency-reduced-pom.xml
 # Add the data file for which the number of characters is to be counted
 ADD data.txt /code/data.txt
 
@@ -18,12 +18,15 @@ ADD src /code/src
 
 # Clean existing jars
 RUN ["mvn", "clean"]
+RUN ["mvn", "dependency:resolve"]
+#RUN ["mvn", "verify"]
 
 # Make the compiled jar for the project
-RUN ["mvn", "package"]
+#RUN ["mvn", "package"]
 
 # Expose port for host to use
-EXPOSE 4567
+#EXPOSE 4567
 
 # Run the jar file made to count the number of characters
-CMD ["/usr/lib/jvm/java-7-openjdk-amd64/bin/java", "-jar", "target/testDocker-1.0-SNAPSHOT.jar"]
+#CMD ["/usr/lib/jvm/java-7-openjdk-amd64/bin/java", "-jar", "target/testDocker-1.0-SNAPSHOT.jar"]
+
