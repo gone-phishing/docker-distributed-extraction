@@ -3,3 +3,4 @@
 curl -sSL https://sdk.cloud.google.com | bash
 gcloud auth login
 gcloud config set project <google-cloud-project-id>
+gcloud compute instances create docker-playground --image container-vm --zone us-central1-a --machine-type f1-micro
