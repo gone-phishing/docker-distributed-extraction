@@ -2,5 +2,9 @@
 
 curl -sSL https://sdk.cloud.google.com | bash
 gcloud auth login
+<<<<<<< HEAD
 gcloud config set project <google-cloud-project-id>
 gcloud compute instances create docker-playground --image container-vm --zone us-central1-a --machine-type f1-micro
+=======
+gcloud config set project dist-extraction-framework
+>>>>>>> 518124f0c2a2077b76af3d94ce52263762f12a11

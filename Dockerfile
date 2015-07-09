@@ -41,6 +41,18 @@ RUN rm spark_1.3.0-update.zip
 # Defining the work directory for dist-extraction framework
 WORKDIR /distributed-extraction-framework-spark_1.3.0-update
 
+# Delete all the default config files
+RUN rm download/src/test/resources/download.properties
+RUN rm download/src/test/resources/dist-download.properties
+RUN rm extraction/src/test/resources/config.properties
+RUN rm extraction/src/test/resources/dist-config.properties
+
+# Add the user defined config files
+ADD config/download/download.properties /distributed-extraction-framework-spark_1.3.0-update/download/src/test/resources/download.properties
+ADD config/download/dist-download.properties /distributed-extraction-framework-spark_1.3.0-update/download/src/test/resources/dist-download.properties
+ADD config/extraction/config.properties /distributed-extraction-framework-spark_1.3.0-update/extraction/src/test/resources/config.properties
+ADD config/extraction/dist-config.properties /distributed-extraction-framework-spark_1.3.0-update/extraction/src/test/resources/dist-config.properties
+
 # Cleaning previous builds
 RUN ["mvn", "clean"]
 
