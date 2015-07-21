@@ -71,3 +71,5 @@ EXPOSE 12000
 
 # Executing download module to get zip files for li and bn languages
 RUN ["./run", "seq-download", "config=download/src/test/resources/download.properties"]
+
+RUN ["./run", "extraction", "extraction/src/test/resources/config.properties" "extraction/src/test/resources/dist-config.properties"]
