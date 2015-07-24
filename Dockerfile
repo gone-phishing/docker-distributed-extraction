@@ -12,6 +12,9 @@ RUN apt-get update
 # Installing maven v3.2.1
 RUN apt-get install -y maven
 
+# For forcing no cache build
+RUN echo "Force no cache"
+
 # Download extraction framework zip 
 RUN wget https://github.com/dbpedia/extraction-framework/archive/master.zip
 
@@ -72,4 +75,5 @@ EXPOSE 12000
 # Executing download module to get zip files for li and bn languages
 RUN ["./run", "seq-download", "config=download/src/test/resources/download.properties"]
 
-RUN ["./run", "extraction", "extraction/src/test/resources/config.properties" "extraction/src/test/resources/dist-config.properties"]
+RUN ./run extraction extraction/src/test/resources/config.properties extraction/src/test/resources/dist-config.properties
+
