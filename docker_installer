@@ -110,6 +110,6 @@ elif [[ $platform == 'linux' ]]; then
         # Edit the /etc/default/docker file and add the DNS servers
     fi
   fi
+  echo "Docker is successfully installed!"
 fi
-echo "Docker is successfully installed!"
 exit
