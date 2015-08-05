@@ -15,7 +15,7 @@ RUN apt-get install -y maven
 # For forcing no cache build
 RUN echo "Force no cache"
 
-# Download extraction framework zip 
+# Download extraction framework zip
 RUN wget https://github.com/dbpedia/extraction-framework/archive/master.zip
 
 # Unzip the extraction framework files
@@ -33,6 +33,9 @@ WORKDIR /
 # Deleting the extraction framework zip and extracted files
 RUN rm -rf extraction-framework-master/
 RUN rm master.zip
+
+# For forcing no cache build
+RUN echo "Extraction framework installed"
 
 # Downloading and extracting the distributed extracted framework zip from github
 RUN wget https://github.com/gone-phishing/distributed-extraction-framework/archive/spark_1.3.0-update.zip
@@ -63,17 +66,17 @@ RUN ["mvn", "clean"]
 RUN ["mvn", "install", "-Dmaven.test.skip=true"]
 
 # Make directory for main jar
-#RUN mkdir -p distributed/target/
+RUN mkdir -p distributed/target/
 
 # Copy and rename the extraction jar to distribution jar
-#RUN cp extraction/target/extraction-4.0-SNAPSHOT.jar distributed/target/
-#RUN mv distributed/target/extraction-4.0-SNAPSHOT.jar distributed/target/distributed-4.0-SNAPSHOT.jar 
+RUN cp extraction/target/extraction-4.0-SNAPSHOT.jar distributed/target/
+RUN mv distributed/target/extraction-4.0-SNAPSHOT.jar distributed/target/distributed-4.0-SNAPSHOT.jar
 
 # Exposing port for host to use
-#EXPOSE 12000
+EXPOSE 12000
 
 # Executing download module to get zip files for li and bn languages
-#RUN ["./run", "seq-download", "config=download/src/test/resources/download.properties"]
+RUN ["./run", "seq-download", "config=download/src/test/resources/download.properties"]
 
-#RUN ./run extraction extraction/src/test/resources/config.properties extraction/src/test/resources/dist-config.properties
+RUN ./run extraction extraction/src/test/resources/config.properties extraction/src/test/resources/dist-config.properties
 
