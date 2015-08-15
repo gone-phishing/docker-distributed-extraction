@@ -78,5 +78,8 @@ EXPOSE 12000
 # Executing download module to get zip files for li and bn languages
 RUN ["./run", "seq-download", "config=download/src/test/resources/download.properties"]
 
+# Performing extraction on the downloaded files
 RUN ./run extraction extraction/src/test/resources/config.properties extraction/src/test/resources/dist-config.properties
 
+# Adding benchmark script
+ADD benchmark /distributed-extraction-framework-spark_1.3.0-update/
