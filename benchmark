@@ -37,3 +37,14 @@ else
 	factor=$(echo "$diff2/$diff1" | bc)
 	echo "Performance enhanced by factor of" $factor
 fi
+
+echo "==================================================="
+echo "============ Run extraction using spark ==========="
+echo "==================================================="
+initiate3=$(date +%s.%N)
+./run extraction extraction/src/test/resources/config.properties extraction/src/test/resources/dist-config.properties
+#java -version # For test use
+terminate3=$(date +%s.%N)
+diff3=$(echo "$terminate3 - $initiate3" | bc)
+echo "Total time for extraction : " $diff2 "seconds"
+echo ""
