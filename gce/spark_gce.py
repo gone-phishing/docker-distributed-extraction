@@ -26,7 +26,7 @@ import threading
 import traceback
 
 ###
-# Make sure gcutil is installed and authenticated 
+# Make sure gcutil is installed and authenticated
 # Usage: spark_gce.py <project> <no-slaves> <slave-type> <master-type> <identity-file> <zone> <cluster-name> <spark-mem> [<local-log-dir>]'
 # Usage: spark_gce.py <project> <cluster-name> [<identity-file> <local-log-dir>] destroy'
 ###
@@ -86,12 +86,12 @@ def read_args():
             identity_file = sys.argv[3]
             nmon_log_dir = sys.argv[4]
             username = getpass.getuser()
-        
+
         if nmon_log_dir != "":
             print 'Downloading all nmon logs to ' + nmon_log_dir
             (master_nodes, slave_nodes) = get_cluster_ips()
             aggregate_nmon(master_nodes,slave_nodes)
-        
+
         try:
 
             command = 'gcutil --project=' + project + ' listinstances --columns=name,external-ip --format=csv'
@@ -309,7 +309,7 @@ def ssh_command(host,command):
 
     #print "ssh -i " + identity_file + " -o 'UserKnownHostsFile=/dev/null' -o 'CheckHostIP=no' -o 'StrictHostKeyChecking no' "+ username + "@" + host + " '" + command + "'"
     commands.getstatusoutput("ssh -i " + identity_file + " -o 'UserKnownHostsFile=/dev/null' -o 'CheckHostIP=no' -o 'StrictHostKeyChecking no' "+ username + "@" + host + " '" + command + "'" )
-    
+
 def scp_command(host,remote_path,local_path):
     #print "scp -i " + identity_file + " -o 'UserKnownHostsFile=/dev/null' -o 'CheckHostIP=no' -o 'StrictHostKeyChecking no' "+ username + "@" + host + ":" + remote_path + " " + local_path
     commands.getstatusoutput("scp -i " + identity_file + " -o 'UserKnownHostsFile=/dev/null' -o 'CheckHostIP=no' -o 'StrictHostKeyChecking no' "+ username + "@" + host + ":" + remote_path + " " + local_path)
@@ -405,9 +405,9 @@ def setup_spark(master_nodes,slave_nodes):
     ssh_command(master,"mkdir engine")
 
     setup_maven(master_nodes)
-    
+
     if nmon_log_dir != "": setup_nmon(master_nodes,slave_nodes)
-    
+
     ssh_command(master,"cd engine;wget http://apache.mesi.com.ar/spark/spark-0.9.1/spark-0.9.1-bin-hadoop2.tgz")
     ssh_command(master,"cd engine;wget https://s3.amazonaws.com/sigmoidanalytics-builds/spark/0.9.1/gce/scala.tgz")
     ssh_command(master,"cd engine;tar zxf spark-0.9.1-bin-hadoop2.tgz;rm spark-0.9.1-bin-hadoop2.tgz")
@@ -482,10 +482,10 @@ def setup_maven(master_nodes):
     master = master_nodes[0]
     print '[ Downloading maven ]'
 
-    ssh_command(master,"cd engine;wget http://mirror.cc.columbia.edu/pub/software/apache/maven/maven-3/3.0.5/binaries/apache-maven-3.0.5-bin.tar.gz")
-    ssh_command(master,"cd engine;tar zxf apache-maven-3.0.5-bin.tar.gz")
-    ssh_command(master,"cd engine;rm apache-maven-3.0.5-bin.tar.gz")
-    ssh_command(master,"echo 'export MAVEN_HOME=/home/`whoami`/engine/apache-maven-3.0.5' >> .bashrc")
+    ssh_command(master,"cd engine;wget http://mirror.reverse.net/pub/apache/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz")
+    ssh_command(master,"cd engine;tar zxf apache-maven-3.3.3-bin.tar.gz")
+    ssh_command(master,"cd engine;rm apache-maven-3.3.3-bin.tar.gz")
+    ssh_command(master,"echo 'export MAVEN_HOME=/home/`whoami`/engine/apache-maven-3.3.3' >> .bashrc")
     ssh_command(master,"echo 'export PATH=\$PATH:\$MAVEN_HOME/bin' >> .bashrc")
 
 def setup_hadoop(master_nodes,slave_nodes):
