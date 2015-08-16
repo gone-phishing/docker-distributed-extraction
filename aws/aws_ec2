@@ -1,0 +1,10 @@
+Launch aws t2.micro instance with :
+Linux AMI, t2.micro (1 cpu, 1gb RAM, 8gb SSD)
+Get the private key (Download , chmod 400 xyz.pem)
+ssh -i xyz.pem ec2-user@<ip>
+sudo docker -d (terminal 1)
+(terminal 2)
+wget <github zip link>
+cd docker-distributed-extraction-master
+sudo docker build -t gonephishing/dbpedia .
+
