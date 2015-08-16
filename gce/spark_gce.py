@@ -408,36 +408,36 @@ def setup_spark(master_nodes,slave_nodes):
 
     if nmon_log_dir != "": setup_nmon(master_nodes,slave_nodes)
 
-    ssh_command(master,"cd engine;wget http://apache.mesi.com.ar/spark/spark-0.9.1/spark-0.9.1-bin-hadoop2.tgz")
-    ssh_command(master,"cd engine;wget https://s3.amazonaws.com/sigmoidanalytics-builds/spark/0.9.1/gce/scala.tgz")
-    ssh_command(master,"cd engine;tar zxf spark-0.9.1-bin-hadoop2.tgz;rm spark-0.9.1-bin-hadoop2.tgz")
-    ssh_command(master,"cd engine;tar zxf scala.tgz;rm scala.tgz")
+    ssh_command(master,"cd engine;wget http://apache.mirrors.tds.net/spark/spark-1.3.0/spark-1.3.0.tgz")
+    ssh_command(master,"cd engine;wget http://downloads.typesafe.com/scala/2.11.4/scala-2.11.4.tgz")
+    ssh_command(master,"cd engine;tar zxf spark-1.3.0.tgz;rm spark-1.3.0.tgz")
+    ssh_command(master,"cd engine;tar zxf scala-2.11.4.tgz;rm scala-2.11.4.tgz")
 
     print '[ Building Spark with Hadoop 2.2.0 ]'
-    ssh_command(master,"cd engine/spark-0.9.1-bin-hadoop2;SCALA_HOME=\"/home/`whoami`/engine/scala\" MAVEN_OPTS=\"-Xmx2g -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=512m\" mvn -Dhadoop.version=2.2.0 -Dprotobuf.version=2.5.0 -DskipTests clean package")
+    ssh_command(master,"cd engine/spark-1.3.0;SCALA_HOME=\"/home/`whoami`/engine/scala\" MAVEN_OPTS=\"-Xmx2g -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=512m\" mvn -Dhadoop.version=2.2.0 -Dprotobuf.version=2.5.0 -DskipTests clean package")
 
     print '[ Updating Spark Configurations ]'
-    ssh_command(master,"cd engine;cd spark-0.9.1-bin-hadoop2/conf;cp spark-env.sh.template spark-env.sh")
-    ssh_command(master,"cd engine;cd spark-0.9.1-bin-hadoop2/conf;echo 'export SCALA_HOME=\"/home/`whoami`/engine/scala\"' >> spark-env.sh")
-    ssh_command(master,"cd engine;cd spark-0.9.1-bin-hadoop2/conf;echo 'export SCALA_HOME=\"/home/`whoami`/engine/scala\"' >> .bashrc")
-    ssh_command(master,"cd engine;cd spark-0.9.1-bin-hadoop2/conf;echo 'export SPARK_MEM=%s' >> spark-env.sh" % spark_mem)
-    ssh_command(master,"cd engine;cd spark-0.9.1-bin-hadoop2/conf;echo 'export SPARK_WORKER_CORES=%d' >> spark-env.sh" % worker_cores)
-    ssh_command(master,"cd engine;cd spark-0.9.1-bin-hadoop2/conf;echo 'export SPARK_WORKER_INSTANCES=%d' >> spark-env.sh" % worker_instances)
-    ssh_command(master,"cd engine;cd spark-0.9.1-bin-hadoop2/conf;echo \"SPARK_JAVA_OPTS+=\\\" -Dspark.local.dir=/mnt/spark \\\"\" >> spark-env.sh")
-    ssh_command(master,"cd engine;cd spark-0.9.1-bin-hadoop2/conf;echo 'export SPARK_JAVA_OPTS' >> spark-env.sh")
-    ssh_command(master,"cd engine;cd spark-0.9.1-bin-hadoop2/conf;echo 'export SPARK_MASTER_IP=PUT_MASTER_IP_HERE' >> spark-env.sh")
-    ssh_command(master,"cd engine;cd spark-0.9.1-bin-hadoop2/conf;echo 'export MASTER=spark://PUT_MASTER_IP_HERE:7077' >> spark-env.sh")
-    ssh_command(master,"cd engine;cd spark-0.9.1-bin-hadoop2/conf;echo 'export JAVA_HOME=/usr/lib/jvm/java-1.7.0-openjdk-1.7.0.65.x86_64' >> spark-env.sh")
-    #ssh_command(master,"cd engine/spark-0.9.1-bin-hadoop2;MAVEN_OPTS=\"-Xmx2g -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=512m\" /home/`whoami`/engine/apache-maven-3.0.5/mvn -Dhadoop.version=2.2.0 -Dprotobuf.version=2.5.0 -DskipTests clean package")
+    ssh_command(master,"cd engine;cd spark-1.3.0/conf;cp spark-env.sh.template spark-env.sh")
+    ssh_command(master,"cd engine;cd spark-1.3.0/conf;echo 'export SCALA_HOME=\"/home/`whoami`/engine/scala\"' >> spark-env.sh")
+    ssh_command(master,"cd engine;cd spark-1.3.0/conf;echo 'export SCALA_HOME=\"/home/`whoami`/engine/scala\"' >> .bashrc")
+    ssh_command(master,"cd engine;cd spark-1.3.0/conf;echo 'export SPARK_MEM=%s' >> spark-env.sh" % spark_mem)
+    ssh_command(master,"cd engine;cd spark-1.3.0/conf;echo 'export SPARK_WORKER_CORES=%d' >> spark-env.sh" % worker_cores)
+    ssh_command(master,"cd engine;cd spark-1.3.0/conf;echo 'export SPARK_WORKER_INSTANCES=%d' >> spark-env.sh" % worker_instances)
+    ssh_command(master,"cd engine;cd spark-1.3.0/conf;echo \"SPARK_JAVA_OPTS+=\\\" -Dspark.local.dir=/mnt/spark \\\"\" >> spark-env.sh")
+    ssh_command(master,"cd engine;cd spark-1.3.0/conf;echo 'export SPARK_JAVA_OPTS' >> spark-env.sh")
+    ssh_command(master,"cd engine;cd spark-1.3.0/conf;echo 'export SPARK_MASTER_IP=PUT_MASTER_IP_HERE' >> spark-env.sh")
+    ssh_command(master,"cd engine;cd spark-1.3.0/conf;echo 'export MASTER=spark://PUT_MASTER_IP_HERE:7077' >> spark-env.sh")
+    ssh_command(master,"cd engine;cd spark-1.3.0/conf;echo 'export JAVA_HOME=/usr/lib/jvm/java-1.7.0-openjdk-1.7.0.65.x86_64' >> spark-env.sh")
+    #ssh_command(master,"cd engine/spark-1.3.0;MAVEN_OPTS=\"-Xmx2g -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=512m\" /home/`whoami`/engine/apache-maven-3.0.5/mvn -Dhadoop.version=2.2.0 -Dprotobuf.version=2.5.0 -DskipTests clean package")
 
-    ssh_command(master,"cd engine/spark-0.9.1-bin-hadoop2/conf/;rm slaves")
+    ssh_command(master,"cd engine/spark-1.3.0/conf/;rm slaves")
     for slave in slave_nodes:
-        ssh_command(master,"echo " + slave + " >> engine/spark-0.9.1-bin-hadoop2/conf/slaves")
+        ssh_command(master,"echo " + slave + " >> engine/spark-1.3.0/conf/slaves")
 
 
-    ssh_command(master,"sed -i \"s/PUT_MASTER_IP_HERE/$(/sbin/ifconfig eth0 | grep \"inet addr:\" | cut -d: -f2 | cut -d\" \" -f1)/g\" engine/spark-0.9.1-bin-hadoop2/conf/spark-env.sh")
+    ssh_command(master,"sed -i \"s/PUT_MASTER_IP_HERE/$(/sbin/ifconfig eth0 | grep \"inet addr:\" | cut -d: -f2 | cut -d\" \" -f1)/g\" engine/spark-1.3.0/conf/spark-env.sh")
 
-    ssh_command(master,"chmod +x engine/spark-0.9.1-bin-hadoop2/conf/spark-env.sh")
+    ssh_command(master,"chmod +x engine/spark-1.3.0/conf/spark-env.sh")
 
     print '[ Rsyncing Spark to all slaves ]'
 
@@ -447,7 +447,7 @@ def setup_spark(master_nodes,slave_nodes):
 
     ssh_command(master,"mkdir /mnt/spark")
     print '[ Starting Spark Cluster ]'
-    ssh_command(master,"engine/spark-0.9.1-bin-hadoop2/sbin/start-all.sh")
+    ssh_command(master,"engine/spark-1.3.0/sbin/start-all.sh")
 
     setup_hadoop(master_nodes,slave_nodes)
 
