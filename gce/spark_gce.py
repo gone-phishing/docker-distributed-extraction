@@ -514,14 +514,14 @@ def setup_hadoop(master_nodes,slave_nodes):
     ssh_command(master,"echo 'export PATH=\$PATH:\$HADOOP_INSTALL/bin' >> .bashrc")
 
     #Remove *-site.xmls
-    ssh_command(master,"cd engine/hadoop-2.2.0;rm etc/hadoop/core-site.xml")#TODO revisit
-    ssh_command(master,"cd engine/hadoop-2.2.0;rm etc/hadoop/yarn-site.xml")
-    ssh_command(master,"cd engine/hadoop-2.2.0;rm etc/hadoop/hdfs-site.xml")
-    #Download Our Confs #TODO revisit
-    ssh_command(master,"cd engine/hadoop-2.2.0/etc/hadoop/;wget https://s3.amazonaws.com/sigmoidanalytics-builds/spark/0.9.1/gce/configs/core-site.xml")
-    ssh_command(master,"cd engine/hadoop-2.2.0/etc/hadoop/;wget https://s3.amazonaws.com/sigmoidanalytics-builds/spark/0.9.1/gce/configs/hdfs-site.xml")
-    ssh_command(master,"cd engine/hadoop-2.2.0/etc/hadoop/;wget https://s3.amazonaws.com/sigmoidanalytics-builds/spark/0.9.1/gce/configs/mapred-site.xml")
-    ssh_command(master,"cd engine/hadoop-2.2.0/etc/hadoop/;wget https://s3.amazonaws.com/sigmoidanalytics-builds/spark/0.9.1/gce/configs/yarn-site.xml")
+    # ssh_command(master,"cd engine/hadoop-2.2.0;rm etc/hadoop/core-site.xml")#TODO revisit
+    # ssh_command(master,"cd engine/hadoop-2.2.0;rm etc/hadoop/yarn-site.xml")
+    # ssh_command(master,"cd engine/hadoop-2.2.0;rm etc/hadoop/hdfs-site.xml")
+    # #Download Our Confs #TODO revisit
+    # ssh_command(master,"cd engine/hadoop-2.2.0/etc/hadoop/;wget https://s3.amazonaws.com/sigmoidanalytics-builds/spark/0.9.1/gce/configs/core-site.xml")
+    # ssh_command(master,"cd engine/hadoop-2.2.0/etc/hadoop/;wget https://s3.amazonaws.com/sigmoidanalytics-builds/spark/0.9.1/gce/configs/hdfs-site.xml")
+    # ssh_command(master,"cd engine/hadoop-2.2.0/etc/hadoop/;wget https://s3.amazonaws.com/sigmoidanalytics-builds/spark/0.9.1/gce/configs/mapred-site.xml")
+    # ssh_command(master,"cd engine/hadoop-2.2.0/etc/hadoop/;wget https://s3.amazonaws.com/sigmoidanalytics-builds/spark/0.9.1/gce/configs/yarn-site.xml")
 
     #Config Core-site
     ssh_command(master,"sed -i \"s/PUT-MASTER-IP/$(/sbin/ifconfig eth0 | grep \"inet addr:\" | cut -d: -f2 | cut -d\" \" -f1)/g\" engine/hadoop-2.2.0/etc/hadoop/core-site.xml")
