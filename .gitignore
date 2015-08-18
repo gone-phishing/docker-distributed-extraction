@@ -2,3 +2,4 @@ distributed-extraction-framework/ontology.owl
 distributed-extraction-framework/ontology.xml
 *.zip
 *.tar.gz
+*.class
