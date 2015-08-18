@@ -1,11 +1,48 @@
 #!/bin/bash
 
-echo "Check version conflicts in extraction-framework and distributed-extraction-framework"
+echo "[INFO] Check version conflicts in extraction-framework and distributed-extraction-framework"
 mkdir tmp;
 cd tmp;
+
+# Put values in a table for columnar list view
+touch table.txt;
+echo "================================" "============" >> table.txt
+echo "Framework" "Version" >> table.txt
+echo "================================" "============" >> table.txt
+
+# Get the pom file for extraction framework and rename it
 wget https://raw.githubusercontent.com/dbpedia/extraction-framework/master/pom.xml;
 mv pom.xml extraction_framework_pom;
-cat extraction_framework_pom | grep SNAPSHOT | sed 's|<[^>]*>||g'
-#echo $a
+
+# Get the pom file for distributed extraction framework and rename it
+wget https://raw.githubusercontent.com/dbpedia/distributed-extraction-framework/master/pom.xml
+mv pom.xml distributed_extraction_framework_pom;
+
+# Get build version using sed
+var1=`cat extraction_framework_pom | grep SNAPSHOT | sed 's|<[^>]*>||g'`
+
+# Remove leading spaces using tr command and append to the table file
+var1_no_lead_space="$(echo -e "${var1}" | tr -d '[[:space:]]')"
+echo "Extraction-framework" $var1_no_lead_space >> table.txt;
+
+# Get build version for distribution extraction framework using sed
+var2=`cat distributed_extraction_framework_pom | grep SNAPSHOT | sed 's|<[^>]*>||g'`
+
+# Remove leading spaces using tr command and append to the table file
+var2_no_lead_space="$(echo -e "${var2}" | tr -d '[[:space:]]')"
+echo "Distributed-extraction-framework" $var2_no_lead_space >> table.txt;
+echo "================================" "============" >> table.txt
+
+# Display table using column command
+column -t -s' ' table.txt;
+echo ""
+
+if [ "$var1_no_lead_space" == "$var2_no_lead_space" ]
+then
+	echo "Matching versions found"
+else
+	echo "Version mismatch found"
+fi
+# Delete the temp directory
 cd ..;
 rm -rf tmp

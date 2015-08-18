@@ -1,5 +1,3 @@
-package sample;
-
 import java.io.*;
 import java.util.logging.Logger;
 import com.jcraft.jsch.*;
@@ -11,6 +9,10 @@ import com.jcraft.jsch.*;
  * args[1] = "username"
  * args[2] = "hostname"
  * args[3] = "privateKeyFile"
+ *
+ * Example :
+ * javac -cp ".:./lib/jsch.jar" spark_aws.java
+ * java -cp ".:./lib/jsch.jar" spark_aws single ec2-user <host-name> ~/Downloads/private_key.pem
  */
 
 public class spark_aws
@@ -36,7 +38,7 @@ public class spark_aws
 		{
 			Session session = getSession();
 			session.connect();
-			execute_sudo(session, "pwd;", "");
+			execute_command(session, "cat /proc/version;");
 			session.disconnect();
 		}
 		catch(JSchException je)
@@ -45,13 +47,68 @@ public class spark_aws
 		}
 	}
 
-	public Session execute_sudo(Session session, String command, String passwd)
+	public Session execute_command(Session session, String command)
 	{
 		try
 		{
 			ChannelExec channel=(ChannelExec) session.openChannel("exec");
-	      	//channel.setCommand("sudo -S -p '' "+command);
 			channel.setCommand(command);
+			//BufferedReader reader = new BufferedReader(new InputStreamReader(channel.getInputStream()));
+			InputStream in=channel.getInputStream();
+	      	channel.setErrStream(System.err);
+
+	      	channel.connect();
+
+	      	byte[] tmp=new byte[1024];
+	      	while(true)
+	      	{
+	      	  	while(in.available()>0)
+	      	  	{
+	      	    	int i=in.read(tmp, 0, 1024);
+	      	    	if(i<0)break;
+	      	    	System.out.print(new String(tmp, 0, i));
+	      	  	}
+	      	  	if(channel.isClosed())
+	      	  	{
+	      	  		if(channel.getExitStatus() == 0)
+	      	  		{
+	      	  			System.out.println("Execution successful");
+	      	  		}
+	      	  		else
+	      	  		{
+	      	  			System.out.println("exit-status: "+channel.getExitStatus());
+	      	  		}
+	      	    	break;
+	        	}
+	        	try
+	        	{
+	        		Thread.sleep(1000);
+	        	}
+	        	catch(Exception ee)
+	        	{
+	        		ee.printStackTrace();
+	        	}
+	      	}
+			channel.disconnect();
+	    }
+	    catch(JSchException jex)
+	    {
+	      	jex.printStackTrace();
+	    }
+	    catch(IOException iex)
+	    {
+	    	iex.printStackTrace();
+	    }
+
+	    return session;
+	}
+
+	public Session execute_command_sudo(Session session, String command, String passwd)
+	{
+		try
+		{
+			ChannelExec channel=(ChannelExec) session.openChannel("exec");
+	      	channel.setCommand("sudo -S -p '' "+command);
 			//BufferedReader reader = new BufferedReader(new InputStreamReader(channel.getInputStream()));
 			InputStream in=channel.getInputStream();
 	      	OutputStream out=channel.getOutputStream();
@@ -120,6 +177,11 @@ public class spark_aws
 		return this.session;
 	}
 
+	private static void correct_execution_format()
+	{
+		System.out.println("[INFO] Correct format of execution is: \n[INFO] <setup-type> : [\"single\" | \"cluster\"] <username> <hostname> <privateKeyFile>");
+	}
+
 	public static void main(String[] args)
 	{
 		if(args.length >= 4)
@@ -132,10 +194,16 @@ public class spark_aws
 			{
 				System.out.println("Initiate cluster setup");
 			}
+			else
+			{
+				System.out.println("[ERROR] Setup type can only be 'single' or 'cluster'");
+				correct_execution_format();
+			}
 		}
 		else
 		{
-			System.out.println("Correct format of execution is: \n<setup-type> : [\"single\"] | [\"cluster\"] <username> <hostname> <privateKeyFile>");
+			System.out.println("[ERROR] Insufficient arguments");
+			correct_execution_format();
 		}
 		System.out.println("That's all folks !!");
 	}
