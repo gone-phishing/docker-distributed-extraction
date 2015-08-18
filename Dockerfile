@@ -82,4 +82,4 @@ RUN ["./run", "seq-download", "config=download/src/test/resources/download.prope
 RUN ./run extraction extraction/src/test/resources/config.properties extraction/src/test/resources/dist-config.properties
 
 # Adding benchmark script
-ADD benchmark /distributed-extraction-framework-spark_1.3.0-update/
+ADD util/benchmark /distributed-extraction-framework-spark_1.3.0-update/
