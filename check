@@ -1,0 +1,11 @@
+#!/bin/bash
+
+echo "Check version conflicts in extraction-framework and distributed-extraction-framework"
+mkdir tmp;
+cd tmp;
+wget https://raw.githubusercontent.com/dbpedia/extraction-framework/master/pom.xml;
+mv pom.xml extraction_framework_pom;
+cat extraction_framework_pom | grep SNAPSHOT | sed 's|<[^>]*>||g'
+#echo $a
+cd ..;
+rm -rf tmp
