@@ -38,7 +38,11 @@ public class spark_aws
 		{
 			Session session = getSession();
 			session.connect();
-			execute_command(session, "cat /proc/version;");
+			execute_command(session, "mkdir deploy;");
+			execute_command(session, "wget --directory-prefix deploy/ https://github.com/gone-phishing/docker-distributed-extraction/archive/v0.1.1-beta.tar.gz");
+			execute_command(session, "cd deploy;tar -zxvf v0.1.1-beta.tar.gz;");
+			execute_command(session, "deploy/docker-distributed-extraction-0.1.1-beta/util/check");
+			//execute_command(session, "util/check;");
 			session.disconnect();
 		}
 		catch(JSchException je)
@@ -72,11 +76,11 @@ public class spark_aws
 	      	  	{
 	      	  		if(channel.getExitStatus() == 0)
 	      	  		{
-	      	  			System.out.println("Execution successful");
+	      	  			System.out.println("[INFO] Command: "+command+" Execution successful");
 	      	  		}
 	      	  		else
 	      	  		{
-	      	  			System.out.println("exit-status: "+channel.getExitStatus());
+	      	  			System.out.println("[ERROR] Command failed with exit-status: "+channel.getExitStatus());
 	      	  		}
 	      	    	break;
 	        	}
