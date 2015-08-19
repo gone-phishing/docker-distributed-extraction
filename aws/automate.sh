@@ -12,11 +12,11 @@
 # args[8] = "security_groups"
 # args[9] = "instance_id1"
 
-javac -cp ".:./lib/jsch.jar" Spark_aws.java
+javac -cp ".:./lib/jsch.jar:./lib/json.jar" Spark_aws.java
 
 # $? holds the exit code for last executed command
 if [[ $? == 0 ]]; then
-	java -cp ".:./lib/jsch.jar" Spark_aws single ec2-user ec2-52-27-37-236.us-west-2.compute.amazonaws.com /home/gonephishing/Downloads/gsoc1.pem gsoc1 ami-e7527ed7 1 t2.micro "" i-5a1b889f
+	java -cp ".:./lib/jsch.jar:./lib/json.jar" Spark_aws single ec2-user ec2-52-27-37-236.us-west-2.compute.amazonaws.com /home/gonephishing/Downloads/gsoc1.pem gsoc1 ami-e7527ed7 1 t2.micro "" i-5a1b889f
 else
 	echo "[ERROR] Compilation failed"
 fi

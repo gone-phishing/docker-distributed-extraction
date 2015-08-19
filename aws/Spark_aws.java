@@ -1,7 +1,8 @@
 import java.io.*;
 import java.util.logging.Logger;
 import com.jcraft.jsch.*;
-//import org.json.*;
+import org.json.*;
+import java.util.*;
 
 /**
  * Usage :
@@ -16,7 +17,7 @@ import com.jcraft.jsch.*;
  * args[8] = "security_groups"
  * args[9] = "instance_id1"
  * Example :
- * javac -cp ".:./lib/jsch.jar" spark_aws.java
+ * javac -cp ".:./lib/jsch.jar:./lib/json.jar" spark_aws.java
  * java -cp ".:./lib/jsch.jar" spark_aws single ec2-user <host-name> ~/Downloads/private_key.pem
  */
 
@@ -37,8 +38,9 @@ public class Spark_aws
 	public Spark_aws(String username, String hostname, String privateKeyFile, String key_name, String image_id, String count, String instance_type, String security_groups, String instance_id)
 	{
 		System.out.println("Single node setup");
-		this.username = username;
-		this.hostname = hostname;
+		if(username.length() > 0) this.username = username;
+		else this.username = "ec2-user";
+		if(hostname.length() > 0) this.hostname = hostname;
 		this.privateKeyFile = privateKeyFile;
 		this.instance_id1 = instance_id;
 		this.key_name = key_name;
@@ -47,9 +49,51 @@ public class Spark_aws
 		this.security_groups = security_groups;
 		this.image_id = image_id;
 
-		launch_single_instance(image_id);
-		//run_single_instance();
-		//stop_single_instance(instance_id1);
+		try
+		{
+			System.out.println("[INFO] Launching single instance...");
+			String iid = launch_single_instance(image_id);
+			this.instance_id1 = iid;
+
+			System.out.println("[INFO] Describe instance being executed");
+			String public_dns_name = "";
+			while(public_dns_name.length() == 0)
+			{
+				System.out.println("[INFO] Sleeping thread for 90 seconds while instance sets up... ");
+				Thread.sleep(90000);
+				public_dns_name = describe_instance("instance-id",iid);
+			}
+			this.hostname = public_dns_name;
+
+			System.out.println("[INFO] Adding instance name tag");
+			add_instance_tags(instance_id1,"Name","Deploy_Test3");
+
+			System.out.println("[INFO] Runing commands on instance...");
+			run_single_instance();
+
+			Thread.sleep(3000);
+			System.out.println("[INFO] Stopping the instance");
+			stop_single_instance(iid);
+		}
+		catch(InterruptedException ie)
+		{
+			ie.printStackTrace();
+		}
+
+
+	}
+
+	public void add_instance_tags(String id, String key, String tag)
+	{
+		String command = "aws ec2 create-tags --resources "+id+" --tags Key="+key+",Value="+tag;
+		System.out.println("Command: "+command);
+		String result[] = execute_command_shell(command);
+		if(!result[0].equals("0"))
+		{
+			System.out.println("[ERROR] Failed to add tag to the instance");
+			System.exit(0);
+		}
+		else System.out.println("[INFO] Tag added successfully");
 	}
 
 	public String launch_single_instance(String image_id)
@@ -63,21 +107,34 @@ public class Spark_aws
 			System.exit(0);
 		}
 		else System.out.println("[INFO] Instance launched\n"+result[1]);
-		return result[1];
+
+		JSONObject jb1 = new JSONObject(result[1]);
+		JSONArray ja1 = (JSONArray) jb1.get("Instances");
+		JSONObject jb2 = ja1.getJSONObject(0);
+		String iid = jb2.getString("InstanceId");
+		System.out.println("iid: "+iid);
+		return iid;
 	}
 
-	public String[] describe_instance(String name, String value)
+	public String describe_instance(String name, String value)
 	{
-		String command = "aws ec2 describe-instances --filters \"Name=" + name + ",Values="+value+"\"";
+		String command = "aws ec2 describe-instances --filters Name="+name+",Values="+value;
+		System.out.println("Command: "+command);
 		String result[] = execute_command_shell(command);
 		if(!result[0].equals("0"))
 		{
 			System.out.println("[ERROR] Failed to describe instance");
 			System.exit(0);
 		}
-		else System.out.println("[INFO] Instance description received");
+		else System.out.println("[INFO] Instance description received\n"+result[1]);
 
-		return result;
+		JSONObject jb1 = new JSONObject(result[1]);
+		JSONArray ja1 = (JSONArray) jb1.get("Reservations");
+		JSONObject jb2 = ja1.getJSONObject(0);
+		JSONArray ja2 = (JSONArray) jb2.get("Instances");
+		JSONObject jb3 = ja2.getJSONObject(0);
+		String public_dns_name = jb3.getString("PublicDnsName");
+		return public_dns_name;
 	}
 
 	public void stop_single_instance(String instance_id1)
@@ -88,6 +145,7 @@ public class Spark_aws
 		if(!result[0].equals("0"))
 		{
 			System.out.println("[ERROR] Failed to stop instance");
+			System.exit(0);
 		}
 		else System.out.println("[INFO] Instance stopped\n"+result[1]);
 	}
@@ -99,6 +157,7 @@ public class Spark_aws
 		if(!result[0].equals("0"))
 		{
 			System.out.println("[ERROR] Failed to terminate instance");
+			System.exit(0);
 		}
 		else System.out.println("[INFO] Instance terminated\n"+result[1]);
 	}
@@ -113,7 +172,6 @@ public class Spark_aws
 			process = Runtime.getRuntime().exec(command);
 			process.waitFor();
 			int exitStatus = process.exitValue();
-			//op.append("Exit Status: "+exitStatus+"\n");
 			out[0] = ""+exitStatus;
 			BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			String line = "";
@@ -137,12 +195,15 @@ public class Spark_aws
 		{
 			Session session = getSession();
 			session.connect();
+			System.out.println("[INFO] Connected to the instance...");
 			execute_command_aws(session, "mkdir deploy;");
+			System.out.println("[INFO] Executed command 1");
 			execute_command_aws(session, "wget --directory-prefix deploy/ https://github.com/gone-phishing/docker-distributed-extraction/archive/v0.1.1-beta.tar.gz");
 			execute_command_aws(session, "cd deploy;tar -zxvf v0.1.1-beta.tar.gz;");
 			execute_command_aws(session, "rm deploy/v0.1.1-beta.tar.gz");
 			execute_command_aws(session, "deploy/docker-distributed-extraction-0.1.1-beta/util/check");
 			session.disconnect();
+			System.out.println("[INFO] Session disconnected...");
 		}
 		catch(JSchException je)
 		{
