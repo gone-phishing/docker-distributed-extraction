@@ -9,6 +9,7 @@ import com.jcraft.jsch.*;
  * args[1] = "username"
  * args[2] = "hostname"
  * args[3] = "privateKeyFile"
+ * args[4] = "instance_id1"
  *
  * Example :
  * javac -cp ".:./lib/jsch.jar" spark_aws.java
@@ -21,15 +22,57 @@ public class spark_aws
 	private String privateKeyFile="";
 	private String username="";
 	private String hostname="";
+	private String instance_id1="";
 	private Session session;
 
-	public spark_aws(String username, String hostname, String privateKeyFile)
+	public spark_aws(String username, String hostname, String privateKeyFile, String instance_id)
 	{
 		System.out.println("Single node setup");
 		this.username = username;
 		this.hostname = hostname;
 		this.privateKeyFile = privateKeyFile;
-		run_single_instance();
+		this.instance_id1 = instance_id;
+		//launch_single_instance();
+		//run_single_instance();
+		terminate_single_instace();
+	}
+
+	public void terminate_single_instace()
+	{
+		String command = "aws ec2 terminate-instances --instance-ids "+instance_id1;
+		String result = execute_command_shell(command);
+		if(result.charAt(0) != '0')
+		{
+			System.out.println("[ERROR] Failed to terminate instance");
+		}
+		else System.out.println("[INFO] Instance terminated\n"+result);
+	}
+
+	private String execute_command_shell(String command)
+	{
+		StringBuffer op = new StringBuffer();
+
+		Process process;
+		try
+		{
+			process = Runtime.getRuntime().exec(command);
+			process.waitFor();
+			int exitStatus = process.exitValue();
+			op.append("Exit Status: "+exitStatus+"\n");
+			BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			String line = "";
+			while ((line = reader.readLine()) != null)
+			{
+				op.append(line + "\n");
+			}
+
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+
+		return op.toString();
 	}
 
 	public void run_single_instance()
@@ -38,11 +81,11 @@ public class spark_aws
 		{
 			Session session = getSession();
 			session.connect();
-			execute_command(session, "mkdir deploy;");
-			execute_command(session, "wget --directory-prefix deploy/ https://github.com/gone-phishing/docker-distributed-extraction/archive/v0.1.1-beta.tar.gz");
-			execute_command(session, "cd deploy;tar -zxvf v0.1.1-beta.tar.gz;");
-			execute_command(session, "deploy/docker-distributed-extraction-0.1.1-beta/util/check");
-			//execute_command(session, "util/check;");
+			execute_command_aws(session, "mkdir deploy;");
+			execute_command_aws(session, "wget --directory-prefix deploy/ https://github.com/gone-phishing/docker-distributed-extraction/archive/v0.1.1-beta.tar.gz");
+			execute_command_aws(session, "cd deploy;tar -zxvf v0.1.1-beta.tar.gz;");
+			execute_command_aws(session, "rm deploy/v0.1.1-beta.tar.gz");
+			execute_command_aws(session, "deploy/docker-distributed-extraction-0.1.1-beta/util/check");
 			session.disconnect();
 		}
 		catch(JSchException je)
@@ -51,7 +94,7 @@ public class spark_aws
 		}
 	}
 
-	public Session execute_command(Session session, String command)
+	public Session execute_command_aws(Session session, String command)
 	{
 		try
 		{
@@ -107,13 +150,12 @@ public class spark_aws
 	    return session;
 	}
 
-	public Session execute_command_sudo(Session session, String command, String passwd)
+	public Session execute_command_aws_sudo(Session session, String command, String passwd)
 	{
 		try
 		{
 			ChannelExec channel=(ChannelExec) session.openChannel("exec");
 	      	channel.setCommand("sudo -S -p '' "+command);
-			//BufferedReader reader = new BufferedReader(new InputStreamReader(channel.getInputStream()));
 			InputStream in=channel.getInputStream();
 	      	OutputStream out=channel.getOutputStream();
 	      	channel.setErrStream(System.err);
@@ -192,7 +234,7 @@ public class spark_aws
 		{
 			if(args[0].equals("single"))
 			{
-				new spark_aws(args[1], args[2], args[3]);
+				new spark_aws(args[1], args[2], args[3], args[4]);
 			}
 			else if(args[0].equals("cluster"))
 			{
