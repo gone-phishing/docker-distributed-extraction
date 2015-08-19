@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.logging.Logger;
 import com.jcraft.jsch.*;
-//import com.jcraft.jsch.JSchException;
+//import org.json.*;
 
 /**
  * Usage :
@@ -9,70 +9,126 @@ import com.jcraft.jsch.*;
  * args[1] = "username"
  * args[2] = "hostname"
  * args[3] = "privateKeyFile"
- * args[4] = "instance_id1"
- *
+ * args[4] = "key_name"
+ * args[5] = "image_id"
+ * args[6] = "count"
+ * args[7] = "instance_type"
+ * args[8] = "security_groups"
+ * args[9] = "instance_id1"
  * Example :
  * javac -cp ".:./lib/jsch.jar" spark_aws.java
  * java -cp ".:./lib/jsch.jar" spark_aws single ec2-user <host-name> ~/Downloads/private_key.pem
  */
 
-public class spark_aws
+public class Spark_aws
 {
-	private static final Logger log = Logger.getLogger(spark_aws.class.getName());
+	private static final Logger log = Logger.getLogger(Spark_aws.class.getName());
 	private String privateKeyFile="";
+	private String key_name="";
 	private String username="";
 	private String hostname="";
 	private String instance_id1="";
+	private String instance_type="";
+	private String security_groups="";
+	private String image_id="";
+	private int count = 1;
 	private Session session;
 
-	public spark_aws(String username, String hostname, String privateKeyFile, String instance_id)
+	public Spark_aws(String username, String hostname, String privateKeyFile, String key_name, String image_id, String count, String instance_type, String security_groups, String instance_id)
 	{
 		System.out.println("Single node setup");
 		this.username = username;
 		this.hostname = hostname;
 		this.privateKeyFile = privateKeyFile;
 		this.instance_id1 = instance_id;
-		//launch_single_instance();
+		this.key_name = key_name;
+		this.count = Integer.parseInt(count);
+		this.instance_type = instance_type;
+		this.security_groups = security_groups;
+		this.image_id = image_id;
+
+		launch_single_instance(image_id);
 		//run_single_instance();
-		terminate_single_instace();
+		//stop_single_instance(instance_id1);
 	}
 
-	public void terminate_single_instace()
+	public String launch_single_instance(String image_id)
+	{
+		String command = "aws ec2 run-instances --image-id "+image_id+" --count "+count+" --instance-type "+instance_type+" --key-name "+key_name ;
+		System.out.println("Command: "+command);
+		String result[] = execute_command_shell(command);
+		if(!result[0].equals("0"))
+		{
+			System.out.println("[ERROR] Failed to launch image");
+			System.exit(0);
+		}
+		else System.out.println("[INFO] Instance launched\n"+result[1]);
+		return result[1];
+	}
+
+	public String[] describe_instance(String name, String value)
+	{
+		String command = "aws ec2 describe-instances --filters \"Name=" + name + ",Values="+value+"\"";
+		String result[] = execute_command_shell(command);
+		if(!result[0].equals("0"))
+		{
+			System.out.println("[ERROR] Failed to describe instance");
+			System.exit(0);
+		}
+		else System.out.println("[INFO] Instance description received");
+
+		return result;
+	}
+
+	public void stop_single_instance(String instance_id1)
+	{
+		String command = "aws ec2 stop-instances --instance-ids "+instance_id1;
+		System.out.println("Command: "+command);
+		String result[] = execute_command_shell(command);
+		if(!result[0].equals("0"))
+		{
+			System.out.println("[ERROR] Failed to stop instance");
+		}
+		else System.out.println("[INFO] Instance stopped\n"+result[1]);
+	}
+
+	public void terminate_single_instance()
 	{
 		String command = "aws ec2 terminate-instances --instance-ids "+instance_id1;
-		String result = execute_command_shell(command);
-		if(result.charAt(0) != '0')
+		String result[] = execute_command_shell(command);
+		if(!result[0].equals("0"))
 		{
 			System.out.println("[ERROR] Failed to terminate instance");
 		}
-		else System.out.println("[INFO] Instance terminated\n"+result);
+		else System.out.println("[INFO] Instance terminated\n"+result[1]);
 	}
 
-	private String execute_command_shell(String command)
+	private String[] execute_command_shell(String command)
 	{
 		StringBuffer op = new StringBuffer();
-
+		String out[] = new String[2];
 		Process process;
 		try
 		{
 			process = Runtime.getRuntime().exec(command);
 			process.waitFor();
 			int exitStatus = process.exitValue();
-			op.append("Exit Status: "+exitStatus+"\n");
+			//op.append("Exit Status: "+exitStatus+"\n");
+			out[0] = ""+exitStatus;
 			BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			String line = "";
 			while ((line = reader.readLine()) != null)
 			{
 				op.append(line + "\n");
 			}
-
+			out[1] = op.toString();
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
 
-		return op.toString();
+		return out;
 	}
 
 	public void run_single_instance()
@@ -234,7 +290,7 @@ public class spark_aws
 		{
 			if(args[0].equals("single"))
 			{
-				new spark_aws(args[1], args[2], args[3], args[4]);
+				new Spark_aws(args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
 			}
 			else if(args[0].equals("cluster"))
 			{
