@@ -81,5 +81,6 @@ RUN ["./run", "seq-download", "config=download/src/test/resources/download.prope
 # Performing extraction on the downloaded files
 RUN ./run extraction extraction/src/test/resources/config.properties extraction/src/test/resources/dist-config.properties
 
-# Adding benchmark script
+# Adding benchmark and check script
 ADD util/benchmark /distributed-extraction-framework-spark_1.3.0-update/
+ADD util/check /distributed-extraction-framework-spark_1.3.0-update/
