@@ -19,4 +19,4 @@ The project aims at creating Docker images for setting up and working with the d
 
 **Pulling the image directly from the docker hub**
 
-`docker pull gonephishing/dbpedia`
+`sudo docker pull gonephishing/dbpedia`
