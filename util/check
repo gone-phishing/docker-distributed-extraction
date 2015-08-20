@@ -45,4 +45,6 @@ else
 fi
 # Delete the temp directory
 cd ..;
-rm -rf tmp
+rm -rf tmp;
+
+
