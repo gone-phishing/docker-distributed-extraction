@@ -47,4 +47,30 @@ fi
 cd ..;
 rm -rf tmp;
 
+download_file_diff=`diff ../config/download/download.properties ../config/download/download.properties.template | wc -l`;
+if [[ $download_file_diff == 0 ]]; then
+	echo "download.properties file not changed"
+else
+	echo "download.properties file has been modified by the user at " $download_file_diff " places"
+fi
 
+dist_download_file_diff=`diff ../config/download/dist-download.properties ../config/download/dist-download.properties.template | wc -l`;
+if [[ $dist_download_file_diff == 0 ]]; then
+	echo "download.properties file not changed"
+else
+	echo "download.properties file has been modified by the user at " $dist_download_file_diff " places"
+fi
+
+extraction_file_diff=`diff ../config/extraction/config.properties ../config/extraction/config.properties.template | wc -l`;
+if [[ $extraction_file_diff == 0 ]]; then
+	echo "config.properties file not changed"
+else
+	echo "config.properties file has been modified by the user at " $extraction_file_diff " places"
+fi
+
+dist_extraction_file_diff=`diff ../config/extraction/dist-config.properties ../config/extraction/dist-config.properties.template | wc -l`;
+if [[ $dist_extraction_file_diff == 0 ]]; then
+	echo "dist-config.properties file not changed"
+else
+	echo "dist-config.properties file has been modified by the user at " $dist_extraction_file_diff " places"
+fi
