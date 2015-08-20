@@ -5,7 +5,7 @@ import org.json.*;
 import java.util.*;
 
 /**
- * Usage :
+ * Usage (for single instance):
  * args[0] = "single" | "cluster"
  * args[1] = "username"
  * args[2] = "hostname"
@@ -16,6 +16,18 @@ import java.util.*;
  * args[7] = "instance_type"
  * args[8] = "security_groups"
  * args[9] = "instance_id1"
+ *
+ * Usage (for cluster setup):
+ * args[0] = "single" | "cluster"
+ * args[1] = "cluster_name"
+ * args[2] = "ami_version"
+ * args[3] = "application_name"
+ * args[4] = "key_name"
+ * args[5] = "instance_type"
+ * args[6] = "instance_count"
+ * args[7] = "username"
+ * args[8] = "hostname"
+ *
  * Example :
  * javac -cp ".:./lib/jsch.jar:./lib/json.jar" spark_aws.java
  * java -cp ".:./lib/jsch.jar" spark_aws single ec2-user <host-name> ~/Downloads/private_key.pem
@@ -35,22 +47,46 @@ public class Spark_aws
 	private String cluster_name="";
 	private String ami_version="";
 	private String application_name="";
+	private String cluster_id = "";
 	private int instance_count = 1;
 	private Session session;
 
-	public Spark_aws(String cluster_name, String ami_version, String application_name, String key_name, String instance_type, String instance_count)
+	public Spark_aws(String cluster_name, String ami_version, String application_name, String key_name, String instance_type, String instance_count, String username, String hostname)
 	{
+		System.out.println("[INFO] Spark Cluster setup");
 		this.cluster_name = cluster_name;
 		this.ami_version = ami_version;
-		this.application_name = application_name;
+
+		if(application_name.length() == 0) this.application_name = "Spark";
+		else this.application_name = application_name;
+
 		this.key_name = key_name;
 		this.instance_type = instance_type;
 		this.instance_count = Integer.parseInt(instance_count);
 
+		if(username.length() > 0) this.username = username;
+		else this.username = "hadoop";
+
+		if(hostname.length() > 0) this.hostname = hostname;
+
 		try
 		{
 			System.out.println("[INFO] Launching spark cluster");
-			launch_spark_cluster();
+			String cluster_id = launch_spark_cluster();
+			this.cluster_id = cluster_id;
+
+			System.out.println("[INFO] Describe instance being executed");
+			String master_pub_dns = "";
+			while(master_pub_dns.length() == 0)
+			{
+				System.out.println("[INFO] Sleeping thread for 90 seconds while cluster sets up... ");
+				Thread.sleep(90000);
+				master_pub_dns = describe_cluster(cluster_id);
+			}
+			this.hostname = master_pub_dns;
+
+			System.out.println("[INFO] Terminating instances");
+
 		}
 		catch(Exception ex)
 		{
@@ -60,10 +96,12 @@ public class Spark_aws
 
 	public Spark_aws(int single, String username, String hostname, String privateKeyFile, String key_name, String image_id, String instance_count, String instance_type, String security_groups, String instance_id)
 	{
-		System.out.println("Single node setup");
+		System.out.println("[INFO] Single node setup");
 		if(username.length() > 0) this.username = username;
 		else this.username = "ec2-user";
+
 		if(hostname.length() > 0) this.hostname = hostname;
+
 		this.privateKeyFile = privateKeyFile;
 		this.instance_id1 = instance_id;
 		this.key_name = key_name;
@@ -105,9 +143,9 @@ public class Spark_aws
 
 	}
 
-	public void launch_spark_cluster()
+	public String launch_spark_cluster()
 	{
-		String command = "aws emr create-cluster --name \""+cluster_name+"\" --ami-version "+ami_version+" --applications Name="+application_name+" --ec2-attributes KeyName="+key_name+" --instance-type"+instance_type+" --instance-count "+instance_count+" --use-default-roles";
+		String command = "aws emr create-cluster --name \""+cluster_name+"\" --ami-version "+ami_version+" --applications Name="+application_name+" --ec2-attributes KeyName="+key_name+" --instance-type "+instance_type+" --instance-count "+instance_count+" --use-default-roles";
 		System.out.println("Command: "+command);
 		String result[] = execute_command_shell(command);
 		if(!result[0].equals("0"))
@@ -116,6 +154,9 @@ public class Spark_aws
 			System.exit(0);
 		}
 		else System.out.println("[INFO] Cluster launched\n"+result[1]);
+		JSONObject jb1 = new JSONObject(result[1]);
+		String cluster_id = jb1.getString("ClusterId");
+		return cluster_id;
 	}
 
 	public void terminate_cluster_instances(String[] instance_ids)
@@ -126,6 +167,7 @@ public class Spark_aws
 			if(i == instance_ids.length - 1) command += instance_ids[i]+"";
 			else command += instance_ids[i]+" ";
 		}
+		System.out.println("Command: "+command);
 		String result[] = execute_command_shell(command);
 		if(!result[0].equals("0"))
 		{
@@ -133,6 +175,24 @@ public class Spark_aws
 			System.exit(0);
 		}
 		else System.out.println("[INFO] Instance specified terminated\n"+result[1]);
+	}
+
+	public String describe_cluster(String cluster_id)
+	{
+		String command = "aws emr describe-cluster --cluster-id "+cluster_id;
+		System.out.println("Command: "+command);
+		String result[] = execute_command_shell(command);
+		if(!result[0].equals("0"))
+		{
+			System.out.println("[ERROR] Failed to describe cluster");
+			System.exit(0);
+		}
+		else System.out.println("[INFO] Cluster description received\n"+result[1]);
+
+		JSONObject jb1 = new JSONObject(result[1]);
+		JSONObject jb2 = jb1.getJSONObject("Cluster");
+		String master_pub_dns = jb2.getString("MasterPublicDnsName");
+		return master_pub_dns;
 	}
 
 	public String launch_single_instance(String image_id)
