@@ -50,37 +50,38 @@ elif [[ $platform == 'linux' ]]; then
       fi
     fi
   else
-    echo "Checking Docker compatibility"
+    echo "--> Docker is not installed"
+    echo "--> Checking Docker compatibility"
     version_kernel_found1=$(uname -r | cut -d'-' -f1 | cut -d'.' -f1)
     version_kernel_found2=$(uname -r | cut -d'-' -f1 | cut -d'.' -f2)
     kernel_version_expected1=3
     kernel_version_expected2=10
     if [ $version_kernel_found1 -lt $kernel_version_expected1 ]; then
-      echo "Kernel version must be atleast 3.10"
-      echo "Your kernel version:"
+      echo "--> Kernel version must be atleast 3.10"
+      echo "--> Your kernel version:"
       uname -r
       exit
     elif [ $version_kernel_found2 -lt $kernel_version_expected2 ]; then
-      echo "Kernel version must be atleast 3.10"
-      echo "Your kernel version:"
+      echo "--> Kernel version must be atleast 3.10"
+      echo "--> Your kernel version:"
       uname -r
       exit
     else
-      echo "Kernel version found: "
+      echo "--> Kernel version found: "
       uname -r
       username=$(uname -n)
-      echo "Proceeding to install Docker"
+      echo "--> Proceeding to install Docker"
       # Install wget :
-      sudo apt-get update
-      sudo apt-get install wget
+      sudo apt-get -y update
+      sudo apt-get -y install wget
       # Install dependencies (Not installed in a few linux distributions):
-      sudo apt-get install apparmor
-      sudo apt-get install lxc
+      sudo apt-get -y install apparmor
+      sudo apt-get -y install lxc
       #Get the latest Docker package
       wget -qO- https://get.docker.com/ | sh
       # Verify installations :
       sudo docker run hello-world
-      echo "Do you want to create a separate Docker group (y or n) : "
+      echo "--> Do you want to create a separate Docker group (y or n) : "
       flag=1 # To check for a valid response
       # while [ $flag -eq "1" ]
       # do
@@ -89,12 +90,12 @@ elif [[ $platform == 'linux' ]]; then
       #   # Making the Docker group and adding users to it (Docker group is equivalent to the root user)
       #   sudo usermod -aG docker $username
       #   flag=0
-      #   echo "Group added. Log out and log back in after installation for changes to take place!"
+      #   echo "--> Group added. Log out and log back in after installation for changes to take place!"
       #   elif ([ resp -eq "n" ] || [ resp -eq "N" ]); then
-      #   echo "You need to run all docker commands with sudo permissions"
+      #   echo "--> You need to run all docker commands with sudo permissions"
       #   flag=0
       #   else
-      #     echo "Enter a valid choice: "
+      #     echo "--> Enter a valid choice: "
       #   fi
       # done
 
@@ -102,7 +103,7 @@ elif [[ $platform == 'linux' ]]; then
         # Edit the /etc/default/grub file and set GRUB_CMDLINE_LINUX value
 
       # Enable UFW forwarding
-      sudo apt-get install ufw
+      sudo apt-get -y install ufw
       ufw_status=$(sudo ufw status | grep Status | cut -d':' -f2 | cut -d' ' -f2)
       if [ $ufw_status -eq "inactive" ]; then
         sudo ufw enable
@@ -113,6 +114,6 @@ elif [[ $platform == 'linux' ]]; then
         # Edit the /etc/default/docker file and add the DNS servers
     fi
   fi
-  echo "Docker is successfully installed!"
+  echo "--> Docker is successfully installed!"
 fi
 exit

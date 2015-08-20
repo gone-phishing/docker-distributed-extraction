@@ -27,7 +27,7 @@ javac -cp ".:./lib/jsch.jar:./lib/json.jar" Spark_aws.java
 
 # $? holds the exit code for last executed command
 if [[ $? == 0 ]]; then
-	java -cp ".:./lib/jsch.jar:./lib/json.jar" Spark_aws single ec2-user ec2-54-187-245-90.us-west-2.compute.amazonaws.com $HOME/Downloads/gsoc1.pem gsoc1 ami-e7527ed7 1 t2.micro "" i-73fc63b6
+	java -cp ".:./lib/jsch.jar:./lib/json.jar" Spark_aws single ec2-user ec2-54-187-245-90.us-west-2.compute.amazonaws.com $HOME/Downloads/gsoc1.pem gsoc1 ami-5189a661 1 t2.micro "" i-73fc63b6
 	#java -cp ".:./lib/jsch.jar:./lib/json.jar" Spark_aws cluster "Spark_Cluster" 3.8 Spark gsoc1 m3.xlarge 3 hadoop ""
 else
 	echo "[ERROR] Compilation failed"
