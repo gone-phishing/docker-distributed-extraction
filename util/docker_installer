@@ -30,47 +30,47 @@ if [[ $platform == 'freebsd' ]]; then
   echo "FreeBSD distribution found. Install at your own risk"
   exit
 elif [[ $platform == 'linux' ]]; then
-  echo "--> Linux distribution found"
+  echo "[INFO] Linux distribution found"
   uname -a
-  echo "--> Checking previous Docker installations"
+  echo "[INFO] Checking previous Docker installations"
   vlines=$(docker version | wc -l)
   vcount=$(docker version | grep -c version)
   vclient=$(docker version | grep -c "Client version")
   vserver=$(docker version | grep -c "Server version")
   if [[ $vlines -gt 3 ]]; then
-    echo "--> Docker already installed"
+    echo "[INFO] Docker already installed"
   elif [ $vcount -eq "6" ]; then
     if [ $vclient -eq "1" ]; then
       if [ $vserver -eq "1" ]; then
-        echo "--> Docker already installed"
-        # echo "--> Updating Docker"
+        echo "[INFO] Docker already installed"
+        # echo "[INFO] Updating Docker"
         # wget -N https://get.docker.com/ | sh
         docker version
         exit
       fi
     fi
   else
-    echo "--> Docker is not installed"
-    echo "--> Checking Docker compatibility"
+    echo "[INFO] Docker is not installed"
+    echo "[INFO] Checking Docker compatibility"
     version_kernel_found1=$(uname -r | cut -d'-' -f1 | cut -d'.' -f1)
     version_kernel_found2=$(uname -r | cut -d'-' -f1 | cut -d'.' -f2)
     kernel_version_expected1=3
     kernel_version_expected2=10
     if [ $version_kernel_found1 -lt $kernel_version_expected1 ]; then
-      echo "--> Kernel version must be atleast 3.10"
-      echo "--> Your kernel version:"
+      echo "[INFO] Kernel version must be atleast 3.10"
+      echo "[INFO] Your kernel version:"
       uname -r
       exit
     elif [ $version_kernel_found2 -lt $kernel_version_expected2 ]; then
-      echo "--> Kernel version must be atleast 3.10"
-      echo "--> Your kernel version:"
+      echo "[INFO] Kernel version must be atleast 3.10"
+      echo "[INFO] Your kernel version:"
       uname -r
       exit
     else
-      echo "--> Kernel version found: "
+      echo "[INFO] Kernel version found: "
       uname -r
       username=$(uname -n)
-      echo "--> Proceeding to install Docker"
+      echo "[INFO] Proceeding to install Docker"
       # Install wget :
       sudo apt-get -y update
       sudo apt-get -y install wget
@@ -81,23 +81,23 @@ elif [[ $platform == 'linux' ]]; then
       wget -qO- https://get.docker.com/ | sh
       # Verify installations :
       sudo docker run hello-world
-      echo "--> Do you want to create a separate Docker group (y or n) : "
-      flag=1 # To check for a valid response
-      # while [ $flag -eq "1" ]
-      # do
-      #   read resp
-      #   if ([ resp -eq "y" ] || [ resp -eq "Y" ]); then
-      #   # Making the Docker group and adding users to it (Docker group is equivalent to the root user)
-      #   sudo usermod -aG docker $username
-      #   flag=0
-      #   echo "--> Group added. Log out and log back in after installation for changes to take place!"
-      #   elif ([ resp -eq "n" ] || [ resp -eq "N" ]); then
-      #   echo "--> You need to run all docker commands with sudo permissions"
-      #   flag=0
-      #   else
-      #     echo "--> Enter a valid choice: "
-      #   fi
-      # done
+      # echo "[INFO] Do you want to create a separate Docker group (y or n) : "
+      flag=0 # To check for a valid response
+      while [ $flag -eq "1" ]
+      do
+        read resp
+        if ([ resp -eq "y" ] || [ resp -eq "Y" ]); then
+        # Making the Docker group and adding users to it (Docker group is equivalent to the root user)
+        sudo usermod -aG docker $username
+        flag=0
+        echo "--> Group added. Log out and log back in after installation for changes to take place!"
+        elif ([ resp -eq "n" ] || [ resp -eq "N" ]); then
+        echo "--> You need to run all docker commands with sudo permissions"
+        flag=0
+        else
+          echo "--> Enter a valid choice: "
+        fi
+      done
 
       # Adjust memory and swap accounting
         # Edit the /etc/default/grub file and set GRUB_CMDLINE_LINUX value
@@ -114,6 +114,6 @@ elif [[ $platform == 'linux' ]]; then
         # Edit the /etc/default/docker file and add the DNS servers
     fi
   fi
-  echo "--> Docker is successfully installed!"
+  echo "[INFO] Docker is successfully installed!"
 fi
 exit

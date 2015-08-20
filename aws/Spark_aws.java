@@ -30,7 +30,8 @@ import java.util.*;
  *
  * Example :
  * javac -cp ".:./lib/jsch.jar:./lib/json.jar" spark_aws.java
- * java -cp ".:./lib/jsch.jar" spark_aws single ec2-user <host-name> ~/Downloads/private_key.pem
+ * java -cp ".:./lib/jsch.jar:./lib/json.jar" Spark_aws single <username> <hostname> $HOME/Downloads/gsoc1.pem <keyname> ami-5189a661 1 t2.micro "" <imageid>
+ * java -cp ".:./lib/jsch.jar:./lib/json.jar" Spark_aws cluster "<clustername>" 3.8 Spark <keyname> m3.xlarge 3 hadoop <hostname>
  */
 
 public class Spark_aws
@@ -48,6 +49,7 @@ public class Spark_aws
 	private String ami_version="";
 	private String application_name="";
 	private String cluster_id = "";
+	private long SETUP_INTERVAL= 40000;
 	private int instance_count = 1;
 	private Session session;
 
@@ -80,7 +82,7 @@ public class Spark_aws
 			while( master_pub_dns.length() == 0 )
 			{
 				System.out.println("[INFO] Sleeping thread for 90 seconds while cluster sets up... ");
-				Thread.sleep(90000);
+				Thread.sleep(SETUP_INTERVAL);
 				master_pub_dns = describe_cluster(cluster_id);
 			}
 			this.hostname = master_pub_dns;
@@ -124,13 +126,13 @@ public class Spark_aws
 			while(public_dns_name.length() == 0)
 			{
 				System.out.println("[INFO] Sleeping thread for 90 seconds while instance sets up... ");
-				Thread.sleep(90000);
+				Thread.sleep(SETUP_INTERVAL);
 				public_dns_name = describe_instance("instance-id",iid);
 			}
 			this.hostname = public_dns_name;
 
 			System.out.println("[INFO] Adding instance name tag");
-			add_instance_tags(instance_id1,"Name","Deploy_Test9");
+			add_instance_tags(instance_id1,"Name","Deploy_Test10");
 
 			System.out.println("[INFO] Runing commands on instance...");
 			run_single_instance();
@@ -241,6 +243,12 @@ public class Spark_aws
 		return public_dns_name;
 	}
 
+	/**
+	 * @id : Instance-id
+	 * @key : Key of the tag
+	 * @tag : Value for the key to be added
+	 * The method adds tags to the instance made
+	 */
 	public void add_instance_tags(String id, String key, String tag)
 	{
 		String command = "aws ec2 create-tags --resources "+id+" --tags Key="+key+",Value="+tag;
@@ -314,13 +322,15 @@ public class Spark_aws
 			session.connect();
 			System.out.println("[INFO] Connected to the instance...");
 			execute_command_aws(session, "mkdir deploy;");
-			//execute_command_aws_sudo(session, "sudo docker -d", "");
 			System.out.println("[INFO] Executed first command on the instance after ssh");
-			execute_command_aws(session, "wget --directory-prefix deploy/ https://github.com/gone-phishing/docker-distributed-extraction/archive/v0.2.2-beta.tar.gz");
-			execute_command_aws(session, "cd deploy;tar -zxvf v0.2.2-beta.tar.gz;");
-			execute_command_aws(session, "rm deploy/v0.2.2-beta.tar.gz");
-			execute_command_aws(session, "deploy/docker-distributed-extraction-0.2.2-beta/util/check");
-			execute_command_aws(session, "deploy/docker-distributed-extraction-0.2.2-beta/util/docker_installer");
+			execute_command_aws(session, "wget --directory-prefix deploy/ https://github.com/gone-phishing/docker-distributed-extraction/archive/v0.2.4-beta.tar.gz");
+			execute_command_aws(session, "cd deploy;tar -zxvf v0.2.4-beta.tar.gz;");
+			execute_command_aws(session, "rm deploy/v0.2.4-beta.tar.gz");
+			execute_command_aws(session, "deploy/docker-distributed-extraction-0.2.4-beta/util/check");
+			execute_command_aws(session, "deploy/docker-distributed-extraction-0.2.4-beta/util/docker_installer");
+			System.out.println("[INFO] Going to build the docker image");
+			execute_command_aws(session, "cd deploy/docker-distributed-extraction-0.2.4-beta/;sudo docker build -t gonephishing/dbpedia .");
+			System.out.println("[INFO] If you don't imagine, nothing ever happens at all :)");
 			session.disconnect();
 			System.out.println("[INFO] Session disconnected...");
 		}
@@ -360,6 +370,7 @@ public class Spark_aws
 	      	  		else
 	      	  		{
 	      	  			System.out.println("[ERROR] Command failed with exit-status: "+channel.getExitStatus());
+	      	  			System.out.println("[ERROR] Why do we fall, Bruce? So we can learn to pick ourselves up again :p");
 	      	  			System.exit(0);
 	      	  		}
 	      	    	break;
@@ -462,7 +473,8 @@ public class Spark_aws
 
 	private static void correct_execution_format()
 	{
-		System.out.println("[INFO] Correct format of execution is: \n[INFO] <setup-type> : [\"single\" | \"cluster\"] <username> <hostname> <privateKeyFile>");
+		System.out.println("[ERROR] Correct format of execution is: \n[INFO] <setup-type> : [\"single\" | \"cluster\"] <username> <hostname> <privateKeyFile> ...");
+		System.out.println("[ERROR] Check automation script / documentation for more information");
 	}
 
 	public static void main(String[] args)
