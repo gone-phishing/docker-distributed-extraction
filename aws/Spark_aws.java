@@ -131,7 +131,7 @@ public class Spark_aws
 			this.hostname = public_dns_name;
 
 			System.out.println("[INFO] Adding instance name tag");
-			add_instance_tags(instance_id1,"Name","Deploy_Test4");
+			add_instance_tags(instance_id1,"Name","Deploy_Test5");
 
 			System.out.println("[INFO] Runing commands on instance...");
 			run_single_instance();
@@ -314,13 +314,13 @@ public class Spark_aws
 			Session session = getSession();
 			session.connect();
 			System.out.println("[INFO] Connected to the instance...");
-			// execute_command_aws(session, "mkdir deploy;");
-			execute_command_aws_sudo(session, "sudo docker -d", "");
-			// System.out.println("[INFO] Executed command 1");
-			// execute_command_aws(session, "wget --directory-prefix deploy/ https://github.com/gone-phishing/docker-distributed-extraction/archive/v0.2.1-beta.tar.gz");
-			// execute_command_aws(session, "cd deploy;tar -zxvf v0.2.1-beta.tar.gz;");
-			// execute_command_aws(session, "rm deploy/v0.2.1-beta.tar.gz");
-			// execute_command_aws(session, "deploy/docker-distributed-extraction-0.2.1-beta/util/check");
+			execute_command_aws(session, "mkdir deploy;");
+			//execute_command_aws_sudo(session, "sudo docker -d", "");
+			System.out.println("[INFO] Executed first command on the instance after ssh");
+			execute_command_aws(session, "wget --directory-prefix deploy/ https://github.com/gone-phishing/docker-distributed-extraction/archive/v0.2.1-beta.tar.gz");
+			execute_command_aws(session, "cd deploy;tar -zxvf v0.2.1-beta.tar.gz;");
+			execute_command_aws(session, "rm deploy/v0.2.1-beta.tar.gz");
+			execute_command_aws(session, "deploy/docker-distributed-extraction-0.2.1-beta/util/check");
 
 			session.disconnect();
 			System.out.println("[INFO] Session disconnected...");
@@ -457,7 +457,7 @@ public class Spark_aws
 	  	jsch.addIdentity(privateKeyFile);
 		this.session=jsch.getSession(username,hostname);
 		this.session.setConfig("StrictHostKeyChecking","no");
-		//this.session.setConfig("UserKnownHostsFile","/dev/null");
+		this.session.setConfig("UserKnownHostsFile","/dev/null");
 		return this.session;
 	}
 

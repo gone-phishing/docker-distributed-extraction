@@ -33,10 +33,13 @@ elif [[ $platform == 'linux' ]]; then
   echo "--> Linux distribution found"
   uname -a
   echo "--> Checking previous Docker installations"
+  vlines=$(docker version | wc -l)
   vcount=$(docker version | grep -c version)
   vclient=$(docker version | grep -c "Client version")
   vserver=$(docker version | grep -c "Server version")
-  if [ $vcount -eq "6" ]; then
+  if [[ $vlines -gt 3 ]]; then
+    echo "--> Docker already installed"
+  elif [ $vcount -eq "6" ]; then
     if [ $vclient -eq "1" ]; then
       if [ $vserver -eq "1" ]; then
         echo "--> Docker already installed"
@@ -48,16 +51,16 @@ elif [[ $platform == 'linux' ]]; then
     fi
   else
     echo "Checking Docker compatibility"
-    vker1=$(uname -r | cut -d'-' -f1 | cut -d'.' -f1)
-    vker2=$(uname -r | cut -d'-' -f1 | cut -d'.' -f2)
-    vk1=3
-    vk2=10
-    if [ $vker1 -lt $vk1 ]; then
+    version_kernel_found1=$(uname -r | cut -d'-' -f1 | cut -d'.' -f1)
+    version_kernel_found2=$(uname -r | cut -d'-' -f1 | cut -d'.' -f2)
+    kernel_version_expected1=3
+    kernel_version_expected2=10
+    if [ $version_kernel_found1 -lt $kernel_version_expected1 ]; then
       echo "Kernel version must be atleast 3.10"
       echo "Your kernel version:"
       uname -r
       exit
-    elif [ $vker2 -lt $vk2 ]; then
+    elif [ $version_kernel_found2 -lt $kernel_version_expected2 ]; then
       echo "Kernel version must be atleast 3.10"
       echo "Your kernel version:"
       uname -r
@@ -79,21 +82,21 @@ elif [[ $platform == 'linux' ]]; then
       sudo docker run hello-world
       echo "Do you want to create a separate Docker group (y or n) : "
       flag=1 # To check for a valid response
-      while [ $flag -eq "1" ]
-      do
-        read resp
-        if ([ resp -eq "y" ] || [ resp -eq "Y" ]); then
-        # Making the Docker group and adding users to it (Docker group is equivalent to the root user)
-        sudo usermod -aG docker $username
-        flag=0
-        echo "Group added. Log out and log back in after installation for changes to take place!"
-        elif ([ resp -eq "n" ] || [ resp -eq "N" ]); then
-        echo "You need to run all docker commands with sudo permissions"
-        flag=0
-        else
-          echo "Enter a valid choice: "
-        fi
-      done
+      # while [ $flag -eq "1" ]
+      # do
+      #   read resp
+      #   if ([ resp -eq "y" ] || [ resp -eq "Y" ]); then
+      #   # Making the Docker group and adding users to it (Docker group is equivalent to the root user)
+      #   sudo usermod -aG docker $username
+      #   flag=0
+      #   echo "Group added. Log out and log back in after installation for changes to take place!"
+      #   elif ([ resp -eq "n" ] || [ resp -eq "N" ]); then
+      #   echo "You need to run all docker commands with sudo permissions"
+      #   flag=0
+      #   else
+      #     echo "Enter a valid choice: "
+      #   fi
+      # done
 
       # Adjust memory and swap accounting
         # Edit the /etc/default/grub file and set GRUB_CMDLINE_LINUX value

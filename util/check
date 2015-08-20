@@ -39,38 +39,38 @@ echo ""
 
 if [ "$var1_no_lead_space" == "$var2_no_lead_space" ]
 then
-	echo "Matching versions found"
+	echo "[INFO] Matching versions found"
 else
-	echo "Version mismatch found"
+	echo "[INFO] Version mismatch found"
 fi
 # Delete the temp directory
 cd ..;
 rm -rf tmp;
 
 download_file_diff=`diff ../config/download/download.properties ../config/download/download.properties.template | wc -l`;
-if [[ $download_file_diff == 0 ]]; then
-	echo "download.properties file not changed"
+if [[ $download_file_diff -eq 0 ]]; then
+	echo "[INFO] download.properties file not changed"
 else
-	echo "download.properties file has been modified by the user at " $download_file_diff " places"
+	echo "[INFO] download.properties file has been modified by the user at " $download_file_diff " places"
 fi
 
 dist_download_file_diff=`diff ../config/download/dist-download.properties ../config/download/dist-download.properties.template | wc -l`;
-if [[ $dist_download_file_diff == 0 ]]; then
-	echo "download.properties file not changed"
+if [[ $dist_download_file_diff -eq 0 ]]; then
+	echo "[INFO] download.properties file not changed"
 else
-	echo "download.properties file has been modified by the user at " $dist_download_file_diff " places"
+	echo "[INFO] download.properties file has been modified by the user at " $dist_download_file_diff " places"
 fi
 
 extraction_file_diff=`diff ../config/extraction/config.properties ../config/extraction/config.properties.template | wc -l`;
-if [[ $extraction_file_diff == 0 ]]; then
-	echo "config.properties file not changed"
+if [[ $extraction_file_diff -eq 0 ]]; then
+	echo "[INFO] config.properties file not changed"
 else
-	echo "config.properties file has been modified by the user at " $extraction_file_diff " places"
+	echo "[INFO] config.properties file has been modified by the user at " $extraction_file_diff " places"
 fi
 
 dist_extraction_file_diff=`diff ../config/extraction/dist-config.properties ../config/extraction/dist-config.properties.template | wc -l`;
-if [[ $dist_extraction_file_diff == 0 ]]; then
-	echo "dist-config.properties file not changed"
+if [[ $dist_extraction_file_diff -eq 0 ]]; then
+	echo "[INFO] dist-config.properties file not changed"
 else
-	echo "dist-config.properties file has been modified by the user at " $dist_extraction_file_diff " places"
+	echo "[INFO] dist-config.properties file has been modified by the user at " $dist_extraction_file_diff " places"
 fi
