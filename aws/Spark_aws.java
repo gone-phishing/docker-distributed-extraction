@@ -71,21 +71,25 @@ public class Spark_aws
 
 		try
 		{
-			System.out.println("[INFO] Launching spark cluster");
+			System.out.println("[INFO] Launching spark cluster...");
 			String cluster_id = launch_spark_cluster();
 			this.cluster_id = cluster_id;
 
-			System.out.println("[INFO] Describe instance being executed");
+			System.out.println("[INFO] Describe instance being executed...");
 			String master_pub_dns = "";
-			while(master_pub_dns.length() == 0)
+			while( master_pub_dns.length() == 0 )
 			{
 				System.out.println("[INFO] Sleeping thread for 90 seconds while cluster sets up... ");
 				Thread.sleep(90000);
 				master_pub_dns = describe_cluster(cluster_id);
 			}
 			this.hostname = master_pub_dns;
+			System.out.println("hostname: "+hostname);
 
-			System.out.println("[INFO] Terminating instances");
+			System.out.println("[INFO] Terminating instances...");
+			String cluster_id_array[] = new String[1]; // Assuming in future multiple cluster support can be required
+			cluster_id_array[0] = cluster_id;
+			terminate_clusters(cluster_id_array);
 
 		}
 		catch(Exception ex)
@@ -159,13 +163,13 @@ public class Spark_aws
 		return cluster_id;
 	}
 
-	public void terminate_cluster_instances(String[] instance_ids)
+	public void terminate_clusters(String[] cluster_ids)
 	{
 		String command = "aws emr terminate-clusters --cluster-ids ";
-		for(int i=0;i<instance_ids.length; i++)
+		for(int i=0;i<cluster_ids.length; i++)
 		{
-			if(i == instance_ids.length - 1) command += instance_ids[i]+"";
-			else command += instance_ids[i]+" ";
+			if(i == cluster_ids.length - 1) command += cluster_ids[i]+"";
+			else command += cluster_ids[i]+" ";
 		}
 		System.out.println("Command: "+command);
 		String result[] = execute_command_shell(command);
@@ -191,7 +195,9 @@ public class Spark_aws
 
 		JSONObject jb1 = new JSONObject(result[1]);
 		JSONObject jb2 = jb1.getJSONObject("Cluster");
-		String master_pub_dns = jb2.getString("MasterPublicDnsName");
+		String master_pub_dns = jb2.get("MasterPublicDnsName").toString();
+		if( master_pub_dns.equals("null") ) master_pub_dns = "";
+		System.out.println("Master dns: ");
 		return master_pub_dns;
 	}
 
@@ -470,7 +476,7 @@ public class Spark_aws
 			}
 			else if(args[0].equals("cluster"))
 			{
-				new Spark_aws(args[1], args[2], args[3], args[4], args[5], args[6]);
+				new Spark_aws(args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]);
 			}
 			else
 			{
