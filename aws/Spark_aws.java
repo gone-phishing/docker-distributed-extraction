@@ -12,7 +12,7 @@ import java.util.*;
  * args[3] = "privateKeyFile"
  * args[4] = "key_name"
  * args[5] = "image_id"
- * args[6] = "count"
+ * args[6] = "instance_count"
  * args[7] = "instance_type"
  * args[8] = "security_groups"
  * args[9] = "instance_id1"
@@ -32,10 +32,33 @@ public class Spark_aws
 	private String instance_type="";
 	private String security_groups="";
 	private String image_id="";
-	private int count = 1;
+	private String cluster_name="";
+	private String ami_version="";
+	private String application_name="";
+	private int instance_count = 1;
 	private Session session;
 
-	public Spark_aws(String username, String hostname, String privateKeyFile, String key_name, String image_id, String count, String instance_type, String security_groups, String instance_id)
+	public Spark_aws(String cluster_name, String ami_version, String application_name, String key_name, String instance_type, String instance_count)
+	{
+		this.cluster_name = cluster_name;
+		this.ami_version = ami_version;
+		this.application_name = application_name;
+		this.key_name = key_name;
+		this.instance_type = instance_type;
+		this.instance_count = Integer.parseInt(instance_count);
+
+		try
+		{
+			System.out.println("[INFO] Launching spark cluster");
+			launch_spark_cluster();
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+	}
+
+	public Spark_aws(int single, String username, String hostname, String privateKeyFile, String key_name, String image_id, String instance_count, String instance_type, String security_groups, String instance_id)
 	{
 		System.out.println("Single node setup");
 		if(username.length() > 0) this.username = username;
@@ -44,7 +67,7 @@ public class Spark_aws
 		this.privateKeyFile = privateKeyFile;
 		this.instance_id1 = instance_id;
 		this.key_name = key_name;
-		this.count = Integer.parseInt(count);
+		this.instance_count = Integer.parseInt(instance_count);
 		this.instance_type = instance_type;
 		this.security_groups = security_groups;
 		this.image_id = image_id;
@@ -66,7 +89,7 @@ public class Spark_aws
 			this.hostname = public_dns_name;
 
 			System.out.println("[INFO] Adding instance name tag");
-			add_instance_tags(instance_id1,"Name","Deploy_Test3");
+			add_instance_tags(instance_id1,"Name","Deploy_Test4");
 
 			System.out.println("[INFO] Runing commands on instance...");
 			run_single_instance();
@@ -80,25 +103,41 @@ public class Spark_aws
 			ie.printStackTrace();
 		}
 
-
 	}
 
-	public void add_instance_tags(String id, String key, String tag)
+	public void launch_spark_cluster()
 	{
-		String command = "aws ec2 create-tags --resources "+id+" --tags Key="+key+",Value="+tag;
+		String command = "aws emr create-cluster --name \""+cluster_name+"\" --ami-version "+ami_version+" --applications Name="+application_name+" --ec2-attributes KeyName="+key_name+" --instance-type"+instance_type+" --instance-count "+instance_count+" --use-default-roles";
 		System.out.println("Command: "+command);
 		String result[] = execute_command_shell(command);
 		if(!result[0].equals("0"))
 		{
-			System.out.println("[ERROR] Failed to add tag to the instance");
+			System.out.println("[ERROR] Failed to launch cluster");
 			System.exit(0);
 		}
-		else System.out.println("[INFO] Tag added successfully");
+		else System.out.println("[INFO] Cluster launched\n"+result[1]);
+	}
+
+	public void terminate_cluster_instances(String[] instance_ids)
+	{
+		String command = "aws emr terminate-clusters --cluster-ids ";
+		for(int i=0;i<instance_ids.length; i++)
+		{
+			if(i == instance_ids.length - 1) command += instance_ids[i]+"";
+			else command += instance_ids[i]+" ";
+		}
+		String result[] = execute_command_shell(command);
+		if(!result[0].equals("0"))
+		{
+			System.out.println("[ERROR] Failed to terminate cluster instances");
+			System.exit(0);
+		}
+		else System.out.println("[INFO] Instance specified terminated\n"+result[1]);
 	}
 
 	public String launch_single_instance(String image_id)
 	{
-		String command = "aws ec2 run-instances --image-id "+image_id+" --count "+count+" --instance-type "+instance_type+" --key-name "+key_name ;
+		String command = "aws ec2 run-instances --image-id "+image_id+" --count "+instance_count+" --instance-type "+instance_type+" --key-name "+key_name ;
 		System.out.println("Command: "+command);
 		String result[] = execute_command_shell(command);
 		if(!result[0].equals("0"))
@@ -135,6 +174,19 @@ public class Spark_aws
 		JSONObject jb3 = ja2.getJSONObject(0);
 		String public_dns_name = jb3.getString("PublicDnsName");
 		return public_dns_name;
+	}
+
+	public void add_instance_tags(String id, String key, String tag)
+	{
+		String command = "aws ec2 create-tags --resources "+id+" --tags Key="+key+",Value="+tag;
+		System.out.println("Command: "+command);
+		String result[] = execute_command_shell(command);
+		if(!result[0].equals("0"))
+		{
+			System.out.println("[ERROR] Failed to add tag to the instance");
+			System.exit(0);
+		}
+		else System.out.println("[INFO] Tag added successfully");
 	}
 
 	public void stop_single_instance(String instance_id1)
@@ -196,12 +248,14 @@ public class Spark_aws
 			Session session = getSession();
 			session.connect();
 			System.out.println("[INFO] Connected to the instance...");
-			execute_command_aws(session, "mkdir deploy;");
-			System.out.println("[INFO] Executed command 1");
-			execute_command_aws(session, "wget --directory-prefix deploy/ https://github.com/gone-phishing/docker-distributed-extraction/archive/v0.1.1-beta.tar.gz");
-			execute_command_aws(session, "cd deploy;tar -zxvf v0.1.1-beta.tar.gz;");
-			execute_command_aws(session, "rm deploy/v0.1.1-beta.tar.gz");
-			execute_command_aws(session, "deploy/docker-distributed-extraction-0.1.1-beta/util/check");
+			// execute_command_aws(session, "mkdir deploy;");
+			execute_command_aws_sudo(session, "sudo docker -d", "");
+			// System.out.println("[INFO] Executed command 1");
+			// execute_command_aws(session, "wget --directory-prefix deploy/ https://github.com/gone-phishing/docker-distributed-extraction/archive/v0.2.1-beta.tar.gz");
+			// execute_command_aws(session, "cd deploy;tar -zxvf v0.2.1-beta.tar.gz;");
+			// execute_command_aws(session, "rm deploy/v0.2.1-beta.tar.gz");
+			// execute_command_aws(session, "deploy/docker-distributed-extraction-0.2.1-beta/util/check");
+
 			session.disconnect();
 			System.out.println("[INFO] Session disconnected...");
 		}
@@ -241,6 +295,7 @@ public class Spark_aws
 	      	  		else
 	      	  		{
 	      	  			System.out.println("[ERROR] Command failed with exit-status: "+channel.getExitStatus());
+	      	  			System.exit(0);
 	      	  		}
 	      	    	break;
 	        	}
@@ -351,11 +406,11 @@ public class Spark_aws
 		{
 			if(args[0].equals("single"))
 			{
-				new Spark_aws(args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
+				new Spark_aws(1, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
 			}
 			else if(args[0].equals("cluster"))
 			{
-				System.out.println("Initiate cluster setup");
+				new Spark_aws(args[1], args[2], args[3], args[4], args[5], args[6]);
 			}
 			else
 			{
