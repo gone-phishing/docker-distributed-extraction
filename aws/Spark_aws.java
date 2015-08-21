@@ -189,9 +189,10 @@ public class Spark_aws
 			System.out.println("[INFO] Connected to the instance...");
 			execute_command_aws(session, "wget http://mirrors.gigenet.com/apache/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz;");
 			execute_command_aws(session, "tar -zxvf apache-maven-3.3.3-bin.tar.gz; mv apache-maven-3.2.3 /usr/local/;");
-			execute_command_aws(session, "cd /usr/local/; sudo -S -t -p '' ln -s apache-maven-3.2.3 maven;");
+			System.out.println("[INFO] Extraction of maven tar file successfull");
+			execute_command_aws(session, "cd /usr/local/; sudo -t ln -s apache-maven-3.2.3 maven;");
 			System.out.println("[INFO] sudo operation performed successfully");
-			execute_command_aws(session, "cd /etc/profile.d/; sudo -S -t -p '' echo \"\" > maven.sh; sudo -S -t -p '' echo \"export M2_HOME=/usr/local/maven\" >> maven.sh; sudo -S -t -p '' echo \"export M2=$M2_HOME/bin\" >> maven.sh; sudo -S -t -p '' echo \"PATH=$M2:$PATH\" >> maven.sh");
+			execute_command_aws(session, "cd /etc/profile.d/; sudo -t echo \"\" > maven.sh; sudo -t echo \"export M2_HOME=/usr/local/maven\" >> maven.sh; sudo -t echo \"export M2=$M2_HOME/bin\" >> maven.sh; sudo -t echo \"PATH=$M2:$PATH\" >> maven.sh");
 
 			session.disconnect();
 			System.out.println("[INFO] Session disconnected...");
