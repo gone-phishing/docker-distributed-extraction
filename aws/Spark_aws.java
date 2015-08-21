@@ -210,6 +210,31 @@ public class Spark_aws
 		return master_pub_dns;
 	}
 
+	public void run_cluster_operations()
+	{
+		try
+		{
+			Session session = getSession();
+			session.connect();
+			System.out.println("[INFO] Connected to the instance...");
+			execute_command_aws(session, "mkdir dbpedia;");
+			System.out.println("[INFO] Executed first command on the instance after ssh");
+			execute_command_aws(session, "wget --directory-prefix dbpedia/ https://github.com/gone-phishing/distributed-extraction-framework/archive/spark_1.3.0-update.zip");
+			execute_command_aws(session, "cd dbpedia;unzip spark_1.3.0-update.zip;");
+			execute_command_aws(session, "rm dbpedia/spark_1.3.0-update.zip");
+			execute_command_aws(session, "mv distributed-extraction-framework-spark_1.3.0-update distributed-extraction-framework;");
+			execute_command_aws(session, "cd dbpedia/distributed-extraction-framework; mvn clean install -Dmaven.test.skip=true;");
+			execute_command_aws(session, "cd dbpedia/distributed-extraction-framework; ./run download distconfig=download/src/test/resources/dist-download.properties config=download/src/test/resources/download.properties;");
+			System.out.println("[INFO] If you don't imagine, nothing ever happens at all :)");
+			session.disconnect();
+			System.out.println("[INFO] Session disconnected...");
+		}
+		catch(JSchException je)
+		{
+			je.printStackTrace();
+		}
+	}
+
 	public String launch_single_instance(String image_id)
 	{
 		String command = "aws ec2 run-instances --image-id "+image_id+" --count "+instance_count+" --instance-type "+instance_type+" --key-name "+key_name ;
