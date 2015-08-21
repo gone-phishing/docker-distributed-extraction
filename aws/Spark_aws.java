@@ -56,6 +56,12 @@ public class Spark_aws
 	private int instance_count = 1;
 	private Session session;
 
+	/**
+	 * Parametrized constructor for instantiating all variables for a clsuter setup. This is followed by calling methods to
+	 * launch the cluster,
+	 * executing operations on the master node and then safely terminating the cluster
+	 */
+
 	public Spark_aws(String cluster_name, String ami_version, String application_name, String key_name, String instance_type, String instance_count, String username, String hostname, String privatekeyfile, String timeout)
 	{
 		System.out.println("[INFO] Spark Cluster setup");
@@ -93,7 +99,7 @@ public class Spark_aws
 				master_pub_dns = describe_cluster(cluster_id);
 			}
 			this.hostname = master_pub_dns;
-			System.out.println("hostname: "+this.hostname);
+			System.out.println("Master dns name: "+this.hostname);
 
 			System.out.println("[INFO] Installing maven on the master node");
 			clsuter_maven_install();
@@ -164,6 +170,9 @@ public class Spark_aws
 
 	}
 
+	/**
+	 * @return : Returns the cluster id for the launched cluster setup
+	 */
 	public String launch_spark_cluster()
 	{
 		String command = "aws emr create-cluster --name \""+cluster_name+"\" --ami-version "+ami_version+" --applications Name="+application_name+" --ec2-attributes KeyName="+key_name+" --instance-type "+instance_type+" --instance-count "+instance_count+" --use-default-roles";
@@ -180,6 +189,9 @@ public class Spark_aws
 		return cluster_id;
 	}
 
+	/**
+	 * Installs maven on the master node of the cluster
+	 */
 	public void clsuter_maven_install()
 	{
 		try
@@ -190,9 +202,9 @@ public class Spark_aws
 			execute_command_aws(session, "wget http://mirrors.gigenet.com/apache/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz;");
 			execute_command_aws(session, "tar -zxvf apache-maven-3.3.3-bin.tar.gz; mv apache-maven-3.2.3 /usr/local/;");
 			System.out.println("[INFO] Extraction of maven tar file successfull");
-			execute_command_aws(session, "cd /usr/local/; sudo -t ln -s apache-maven-3.2.3 maven;");
+			execute_command_aws(session, "cd /usr/local/; sudo ln -s apache-maven-3.2.3 maven;");
 			System.out.println("[INFO] sudo operation performed successfully");
-			execute_command_aws(session, "cd /etc/profile.d/; sudo -t echo \"\" > maven.sh; sudo -t echo \"export M2_HOME=/usr/local/maven\" >> maven.sh; sudo -t echo \"export M2=$M2_HOME/bin\" >> maven.sh; sudo -t echo \"PATH=$M2:$PATH\" >> maven.sh");
+			execute_command_aws(session, "cd /etc/profile.d/; sudo echo \"\" > maven.sh; sudo echo \"export M2_HOME=/usr/local/maven\" >> maven.sh; sudo echo \"export M2=$M2_HOME/bin\" >> maven.sh; sudo echo \"PATH=$M2:$PATH\" >> maven.sh");
 
 			session.disconnect();
 			System.out.println("[INFO] Session disconnected...");
@@ -203,6 +215,9 @@ public class Spark_aws
 		}
 	}
 
+	/**
+	 * Build the frameworks and perform distributed download and extraction
+	 */
 	public void run_cluster_operations()
 	{
 		try
@@ -229,6 +244,10 @@ public class Spark_aws
 		}
 	}
 
+	/**
+	 * @param cluster_ids : Array of ids of clusters to be terminated
+	 * Terminates the clusters whose ids are specified
+	 */
 	public void terminate_clusters(String[] cluster_ids)
 	{
 		String command = "aws emr terminate-clusters --cluster-ids ";
@@ -247,6 +266,10 @@ public class Spark_aws
 		else System.out.println("[INFO] Instance specified terminated\n"+result[1]);
 	}
 
+	/**
+	 * @param cluster_id id of the clsuter whose description is to be found
+	 * @return Master dns name of the cluster
+	 */
 	public String describe_cluster(String cluster_id)
 	{
 		String command = "aws emr describe-cluster --cluster-id "+cluster_id;
@@ -261,13 +284,15 @@ public class Spark_aws
 
 		JSONObject jb1 = new JSONObject(result[1]);
 		JSONObject jb2 = jb1.getJSONObject("Cluster");
-		System.out.println("Cluster info: "+jb2.toString());
 		String master_pub_dns = jb2.get("MasterPublicDnsName").toString();
 		if( master_pub_dns.equals("null") ) master_pub_dns = "";
-		System.out.println("Master dns: "+master_pub_dns);
 		return master_pub_dns;
 	}
 
+	/**
+	 * @param image_id id of the required type of image
+	 * @return instance id of the launched instance
+	 */
 	public String launch_single_instance(String image_id)
 	{
 		String command = "aws ec2 run-instances --image-id "+image_id+" --count "+instance_count+" --instance-type "+instance_type+" --key-name "+key_name ;
@@ -288,6 +313,11 @@ public class Spark_aws
 		return iid;
 	}
 
+	/**
+	 * @param name : name of the filter key
+	 * @param value : value for the filter key
+	 * @return hostname of the instance launched
+	 */
 	public String describe_instance(String name, String value)
 	{
 		String command = "aws ec2 describe-instances --filters Name="+name+",Values="+value;
@@ -310,9 +340,9 @@ public class Spark_aws
 	}
 
 	/**
-	 * @id : Instance-id
-	 * @key : Key of the tag
-	 * @tag : Value for the key to be added
+	 * @param id : Instance-id
+	 * @param key : Key of the tag
+	 * @param tag : Value for the key to be added
 	 * The method adds tags to the instance made
 	 */
 	public void add_instance_tags(String id, String key, String tag)
@@ -328,6 +358,9 @@ public class Spark_aws
 		else System.out.println("[INFO] Tag added successfully");
 	}
 
+	/**
+	 * @param instance_id1 : id of the instance to be stopped
+	 */
 	public void stop_single_instance(String instance_id1)
 	{
 		String command = "aws ec2 stop-instances --instance-ids "+instance_id1;
@@ -341,6 +374,9 @@ public class Spark_aws
 		else System.out.println("[INFO] Instance stopped\n"+result[1]);
 	}
 
+	/**
+	 * Terminates the instance using the global instance id value
+	 */
 	public void terminate_single_instance()
 	{
 		String command = "aws ec2 terminate-instances --instance-ids "+instance_id1;
@@ -353,6 +389,10 @@ public class Spark_aws
 		else System.out.println("[INFO] Instance terminated\n"+result[1]);
 	}
 
+	/**
+	 * @param command : Command to be executed on the local shell
+	 * @return : A string array of which 0th index contains the exit status and 1st index has the command output
+	 */
 	private String[] execute_command_shell(String command)
 	{
 		StringBuffer op = new StringBuffer();
@@ -380,6 +420,9 @@ public class Spark_aws
 		return out;
 	}
 
+	/**
+	 * Connects to the instance specified earlier and executes commands on the remote server
+	 */
 	public void run_single_instance()
 	{
 		try
@@ -406,13 +449,17 @@ public class Spark_aws
 		}
 	}
 
+	/**
+	 * @param session : the session object to which we have to connect
+	 * @param command : command to be executed on the aws remote ec2 server / instance
+	 * @return Session : in case further commands have to be executed in the same session
+	 */
 	public Session execute_command_aws(Session session, String command)
 	{
 		try
 		{
 			ChannelExec channel=(ChannelExec) session.openChannel("exec");
 			channel.setCommand(command);
-			//BufferedReader reader = new BufferedReader(new InputStreamReader(channel.getInputStream()));
 			InputStream in=channel.getInputStream();
 	      	channel.setErrStream(System.err);
 
@@ -436,7 +483,7 @@ public class Spark_aws
 	      	  		else
 	      	  		{
 	      	  			System.out.println("[ERROR] Command failed with exit-status: "+channel.getExitStatus());
-	      	  			System.out.println("[ERROR] Why do we fall, Bruce? So we can learn to pick ourselves up again :p");
+	      	  			//System.out.println("[INFO] Why do we fall, Bruce? So we can learn to pick ourselves up again...");
 	      	  			System.exit(0);
 	      	  		}
 	      	    	break;
@@ -464,6 +511,12 @@ public class Spark_aws
 	    return session;
 	}
 
+	/**
+	 * @param session : the session object to which we have to connect
+	 * @param command : command to be executed on the aws remote ec2 server / instance
+	 * @param passwd : sudo passwd for the server
+	 * @return Session : in case further commands have to be executed in the same session
+	 */
 	public Session execute_command_aws_sudo(Session session, String command, String passwd)
 	{
 		try
@@ -523,6 +576,10 @@ public class Spark_aws
 	    return session;
 	}
 
+	/**
+	 * @return Session : the session object is returned with all the properties set
+	 * @throws JSchException [throws an jsch exception that needs to be caught/ thrown]
+	 */
 	private Session getSession() throws JSchException
 	{
 	  	if (this.session != null && this.session.isConnected())
@@ -537,12 +594,19 @@ public class Spark_aws
 		return this.session;
 	}
 
+	/**
+	 * Guidelines on using the script
+	 * [TODO] Add more information
+	 */
 	private static void correct_execution_format()
 	{
 		System.out.println("[ERROR] Correct format of execution is: \n[INFO] <setup-type> : [\"single\" | \"cluster\"] <username> <hostname> <privateKeyFile> ...");
 		System.out.println("[ERROR] Check automation script / documentation for more information");
 	}
 
+	/*
+	 * Main method with args in the format specified on the top
+	 */
 	public static void main(String[] args)
 	{
 		if(args.length >= 4)
