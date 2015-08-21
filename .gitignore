@@ -1,5 +1,5 @@
-distributed-extraction-framework/ontology.owl
-distributed-extraction-framework/ontology.xml
-*.zip
+/distributed-extraction-framework/ontology.owl
+/distributed-extraction-framework/ontology.xml
+/aws/*.zip
 *.tar.gz
-*.class
+/aws/*.class
