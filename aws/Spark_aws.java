@@ -484,6 +484,7 @@ public class Spark_aws
 	      	  		{
 	      	  			System.out.println("[ERROR] Command failed with exit-status: "+channel.getExitStatus());
 	      	  			//System.out.println("[INFO] Why do we fall, Bruce? So we can learn to pick ourselves up again...");
+						System.out.println("[ERROR] Exit message: "+channel.getErrStream());
 	      	  			System.exit(0);
 	      	  		}
 	      	    	break;
