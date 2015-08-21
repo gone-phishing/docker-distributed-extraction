@@ -28,10 +28,11 @@ import java.util.*;
  * args[6] = "instance_count"
  * args[7] = "username"
  * args[8] = "hostname"
- * args[9] = "setup-timeout"
+ * args[9] = "privatekeyfile"
+ * args[10] = "setup-timeout"
  *
  * Example :
- * javac -cp ".:./lib/jsch.jar:./lib/json.jar" spark_aws.java
+ * javac -cp ".:./lib/jsch.jar:./lib/json.jar" Spark_aws.java
  * java -cp ".:./lib/jsch.jar:./lib/json.jar" Spark_aws single <username> <hostname> $HOME/Downloads/gsoc1.pem <keyname> ami-5189a661 1 t2.micro "" <imageid>
  * java -cp ".:./lib/jsch.jar:./lib/json.jar" Spark_aws cluster "<clustername>" 3.8 Spark <keyname> m3.xlarge 3 hadoop <hostname>
  */
@@ -55,7 +56,7 @@ public class Spark_aws
 	private int instance_count = 1;
 	private Session session;
 
-	public Spark_aws(String cluster_name, String ami_version, String application_name, String key_name, String instance_type, String instance_count, String username, String hostname, String timeout)
+	public Spark_aws(String cluster_name, String ami_version, String application_name, String key_name, String instance_type, String instance_count, String username, String hostname, String privatekeyfile, String timeout)
 	{
 		System.out.println("[INFO] Spark Cluster setup");
 		this.cluster_name = cluster_name;
@@ -67,6 +68,7 @@ public class Spark_aws
 		this.key_name = key_name;
 		this.instance_type = instance_type;
 		this.instance_count = Integer.parseInt(instance_count);
+		this.privateKeyFile = privatekeyfile;
 
 		if(username.length() > 0) this.username = username;
 		else this.username = "hadoop";
@@ -91,7 +93,13 @@ public class Spark_aws
 				master_pub_dns = describe_cluster(cluster_id);
 			}
 			this.hostname = master_pub_dns;
-			System.out.println("hostname: "+hostname);
+			System.out.println("hostname: "+this.hostname);
+
+			System.out.println("[INFO] Installing maven on the master node");
+			clsuter_maven_install();
+
+			System.out.println("[INFO] Execute project build and deployment");
+			run_cluster_operations();
 
 			// System.out.println("[INFO] Terminating instances...");
 			// String cluster_id_array[] = new String[1]; // Assuming in future multiple cluster support can be required
@@ -172,6 +180,54 @@ public class Spark_aws
 		return cluster_id;
 	}
 
+	public void clsuter_maven_install()
+	{
+		try
+		{
+			Session session = getSession();
+			session.connect();
+			System.out.println("[INFO] Connected to the instance...");
+			execute_command_aws(session, "wget http://mirrors.gigenet.com/apache/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz;");
+			execute_command_aws(session, "tar -zxvf apache-maven-3.3.3-bin.tar.gz; mv apache-maven-3.2.3 /usr/local/;");
+			execute_command_aws(session, "cd /usr/local/; sudo -S -t -p '' ln -s apache-maven-3.2.3 maven;");
+			System.out.println("[INFO] sudo operation performed successfully");
+			execute_command_aws(session, "cd /etc/profile.d/; sudo -S -t -p '' echo \"\" > maven.sh; sudo -S -t -p '' echo \"export M2_HOME=/usr/local/maven\" >> maven.sh; sudo -S -t -p '' echo \"export M2=$M2_HOME/bin\" >> maven.sh; sudo -S -t -p '' echo \"PATH=$M2:$PATH\" >> maven.sh");
+
+			session.disconnect();
+			System.out.println("[INFO] Session disconnected...");
+		}
+		catch(JSchException je)
+		{
+			je.printStackTrace();
+		}
+	}
+
+	public void run_cluster_operations()
+	{
+		try
+		{
+			Session session = getSession();
+			session.connect();
+			System.out.println("[INFO] Connected to the instance...");
+			execute_command_aws(session, "mvn -version");
+			execute_command_aws(session, "mkdir dbpedia;");
+			System.out.println("[INFO] Executed first command on the instance after ssh");
+			execute_command_aws(session, "wget --directory-prefix dbpedia/ https://github.com/gone-phishing/distributed-extraction-framework/archive/spark_1.3.0-update.zip");
+			execute_command_aws(session, "cd dbpedia;unzip spark_1.3.0-update.zip;");
+			execute_command_aws(session, "rm dbpedia/spark_1.3.0-update.zip");
+			execute_command_aws(session, "mv distributed-extraction-framework-spark_1.3.0-update distributed-extraction-framework;");
+			execute_command_aws(session, "cd dbpedia/distributed-extraction-framework; mvn clean install -Dmaven.test.skip=true;");
+			execute_command_aws(session, "cd dbpedia/distributed-extraction-framework; ./run download distconfig=download/src/test/resources/dist-download.properties config=download/src/test/resources/download.properties;");
+			System.out.println("[INFO] If you don't imagine, nothing ever happens at all :)");
+			session.disconnect();
+			System.out.println("[INFO] Session disconnected...");
+		}
+		catch(JSchException je)
+		{
+			je.printStackTrace();
+		}
+	}
+
 	public void terminate_clusters(String[] cluster_ids)
 	{
 		String command = "aws emr terminate-clusters --cluster-ids ";
@@ -204,35 +260,11 @@ public class Spark_aws
 
 		JSONObject jb1 = new JSONObject(result[1]);
 		JSONObject jb2 = jb1.getJSONObject("Cluster");
+		System.out.println("Cluster info: "+jb2.toString());
 		String master_pub_dns = jb2.get("MasterPublicDnsName").toString();
 		if( master_pub_dns.equals("null") ) master_pub_dns = "";
 		System.out.println("Master dns: "+master_pub_dns);
 		return master_pub_dns;
-	}
-
-	public void run_cluster_operations()
-	{
-		try
-		{
-			Session session = getSession();
-			session.connect();
-			System.out.println("[INFO] Connected to the instance...");
-			execute_command_aws(session, "mkdir dbpedia;");
-			System.out.println("[INFO] Executed first command on the instance after ssh");
-			execute_command_aws(session, "wget --directory-prefix dbpedia/ https://github.com/gone-phishing/distributed-extraction-framework/archive/spark_1.3.0-update.zip");
-			execute_command_aws(session, "cd dbpedia;unzip spark_1.3.0-update.zip;");
-			execute_command_aws(session, "rm dbpedia/spark_1.3.0-update.zip");
-			execute_command_aws(session, "mv distributed-extraction-framework-spark_1.3.0-update distributed-extraction-framework;");
-			execute_command_aws(session, "cd dbpedia/distributed-extraction-framework; mvn clean install -Dmaven.test.skip=true;");
-			execute_command_aws(session, "cd dbpedia/distributed-extraction-framework; ./run download distconfig=download/src/test/resources/dist-download.properties config=download/src/test/resources/download.properties;");
-			System.out.println("[INFO] If you don't imagine, nothing ever happens at all :)");
-			session.disconnect();
-			System.out.println("[INFO] Session disconnected...");
-		}
-		catch(JSchException je)
-		{
-			je.printStackTrace();
-		}
 	}
 
 	public String launch_single_instance(String image_id)
@@ -436,7 +468,7 @@ public class Spark_aws
 		try
 		{
 			ChannelExec channel=(ChannelExec) session.openChannel("exec");
-	      	channel.setCommand("sudo -S -p '' "+command);
+	      	channel.setCommand("sudo -S -t -p '' "+command);
 			InputStream in=channel.getInputStream();
 	      	OutputStream out=channel.getOutputStream();
 	      	channel.setErrStream(System.err);
@@ -520,7 +552,7 @@ public class Spark_aws
 			}
 			else if(args[0].equals("cluster"))
 			{
-				new Spark_aws(args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[args.length - 1]);
+				new Spark_aws(args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[args.length - 1]);
 			}
 			else
 			{
