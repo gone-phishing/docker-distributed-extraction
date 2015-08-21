@@ -6,16 +6,17 @@ import java.util.*;
 
 /**
  * Usage (for single instance):
- * args[0] = "single" | "cluster"
- * args[1] = "username"
- * args[2] = "hostname"
- * args[3] = "privateKeyFile"
- * args[4] = "key_name"
- * args[5] = "image_id"
- * args[6] = "instance_count"
- * args[7] = "instance_type"
- * args[8] = "security_groups"
- * args[9] = "instance_id1"
+ * args[0] 	= "single" | "cluster"
+ * args[1] 	= "username"
+ * args[2] 	= "hostname"
+ * args[3] 	= "privateKeyFile"
+ * args[4] 	= "key_name"
+ * args[5] 	= "image_id"
+ * args[6] 	= "instance_count"
+ * args[7] 	= "instance_type"
+ * args[8] 	= "security_groups"
+ * args[9] 	= "instance_id1"
+ * args[10] = "setup-timeout"
  *
  * Usage (for cluster setup):
  * args[0] = "single" | "cluster"
@@ -27,6 +28,7 @@ import java.util.*;
  * args[6] = "instance_count"
  * args[7] = "username"
  * args[8] = "hostname"
+ * args[9] = "setup-timeout"
  *
  * Example :
  * javac -cp ".:./lib/jsch.jar:./lib/json.jar" spark_aws.java
@@ -49,11 +51,11 @@ public class Spark_aws
 	private String ami_version="";
 	private String application_name="";
 	private String cluster_id = "";
-	private long SETUP_INTERVAL= 40000;
+	private long SETUP_INTERVAL= 1000;
 	private int instance_count = 1;
 	private Session session;
 
-	public Spark_aws(String cluster_name, String ami_version, String application_name, String key_name, String instance_type, String instance_count, String username, String hostname)
+	public Spark_aws(String cluster_name, String ami_version, String application_name, String key_name, String instance_type, String instance_count, String username, String hostname, String timeout)
 	{
 		System.out.println("[INFO] Spark Cluster setup");
 		this.cluster_name = cluster_name;
@@ -71,6 +73,9 @@ public class Spark_aws
 
 		if(hostname.length() > 0) this.hostname = hostname;
 
+		if(timeout.length() == 0) this.SETUP_INTERVAL = 40000;
+		else this.SETUP_INTERVAL = Long.parseLong(timeout);
+
 		try
 		{
 			System.out.println("[INFO] Launching spark cluster...");
@@ -81,17 +86,17 @@ public class Spark_aws
 			String master_pub_dns = "";
 			while( master_pub_dns.length() == 0 )
 			{
-				System.out.println("[INFO] Sleeping thread for 90 seconds while cluster sets up... ");
+				System.out.println("[INFO] Sleeping thread for "+(SETUP_INTERVAL/1000)+" seconds while cluster sets up... ");
 				Thread.sleep(SETUP_INTERVAL);
 				master_pub_dns = describe_cluster(cluster_id);
 			}
 			this.hostname = master_pub_dns;
 			System.out.println("hostname: "+hostname);
 
-			System.out.println("[INFO] Terminating instances...");
-			String cluster_id_array[] = new String[1]; // Assuming in future multiple cluster support can be required
-			cluster_id_array[0] = cluster_id;
-			terminate_clusters(cluster_id_array);
+			// System.out.println("[INFO] Terminating instances...");
+			// String cluster_id_array[] = new String[1]; // Assuming in future multiple cluster support can be required
+			// cluster_id_array[0] = cluster_id;
+			// terminate_clusters(cluster_id_array);
 
 		}
 		catch(Exception ex)
@@ -100,7 +105,7 @@ public class Spark_aws
 		}
 	}
 
-	public Spark_aws(int single, String username, String hostname, String privateKeyFile, String key_name, String image_id, String instance_count, String instance_type, String security_groups, String instance_id)
+	public Spark_aws(int single, String username, String hostname, String privateKeyFile, String key_name, String image_id, String instance_count, String instance_type, String security_groups, String instance_id, String timeout)
 	{
 		System.out.println("[INFO] Single node setup");
 		if(hostname.length() > 0) this.hostname = hostname;
@@ -115,6 +120,9 @@ public class Spark_aws
 		else if( image_id.equals("ami-5189a661") ) this.username = "ubuntu";
 		else this.username = username;
 
+		if(timeout.length() == 0) this.SETUP_INTERVAL = 40000;
+		else this.SETUP_INTERVAL = Long.parseLong(timeout);
+
 		try
 		{
 			System.out.println("[INFO] Launching single instance...");
@@ -125,7 +133,7 @@ public class Spark_aws
 			String public_dns_name = "";
 			while(public_dns_name.length() == 0)
 			{
-				System.out.println("[INFO] Sleeping thread for 90 seconds while instance sets up... ");
+				System.out.println("[INFO] Sleeping thread for "+(SETUP_INTERVAL/1000)+" seconds while instance sets up... ");
 				Thread.sleep(SETUP_INTERVAL);
 				public_dns_name = describe_instance("instance-id",iid);
 			}
@@ -198,7 +206,7 @@ public class Spark_aws
 		JSONObject jb2 = jb1.getJSONObject("Cluster");
 		String master_pub_dns = jb2.get("MasterPublicDnsName").toString();
 		if( master_pub_dns.equals("null") ) master_pub_dns = "";
-		System.out.println("Master dns: ");
+		System.out.println("Master dns: "+master_pub_dns);
 		return master_pub_dns;
 	}
 
@@ -483,11 +491,11 @@ public class Spark_aws
 		{
 			if(args[0].equals("single"))
 			{
-				new Spark_aws(1, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
+				new Spark_aws(1, args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[args.length - 1]);
 			}
 			else if(args[0].equals("cluster"))
 			{
-				new Spark_aws(args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]);
+				new Spark_aws(args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[args.length - 1]);
 			}
 			else
 			{
