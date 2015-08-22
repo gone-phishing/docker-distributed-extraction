@@ -200,7 +200,7 @@ public class Spark_aws
 			session.connect();
 			System.out.println("[INFO] Connected to the instance...");
 			execute_command_aws(session, "wget http://mirrors.gigenet.com/apache/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz;");
-			execute_command_aws(session, "tar -zxvf apache-maven-3.3.3-bin.tar.gz; mv apache-maven-3.2.3 /usr/local/;");
+			execute_command_aws(session, "tar -zxf apache-maven-3.3.3-bin.tar.gz; mv apache-maven-3.2.3 /usr/local/;");
 			System.out.println("[INFO] Extraction of maven tar file successfull");
 			execute_command_aws(session, "cd /usr/local/; sudo ln -s apache-maven-3.2.3 maven;");
 			System.out.println("[INFO] sudo operation performed successfully");
@@ -458,10 +458,15 @@ public class Spark_aws
 	{
 		try
 		{
-			ChannelExec channel=(ChannelExec) session.openChannel("exec");
-			channel.setCommand(command);
-			InputStream in=channel.getInputStream();
-	      	channel.setErrStream(System.err);
+			Channel channel= session.openChannel("exec");
+			((ChannelExec) channel).setCommand(command);
+			channel.setInputStream(null);
+			((ChannelExec) channel).setErrStream(System.err);
+			InputStream in = channel.getInputStream();
+
+			//channel.setErrStream(System.err);
+			//channel.setCommand(command);
+			//InputStream in=channel.getInputStream();
 
 	      	channel.connect();
 
@@ -484,7 +489,7 @@ public class Spark_aws
 	      	  		{
 	      	  			System.out.println("[ERROR] Command failed with exit-status: "+channel.getExitStatus());
 	      	  			//System.out.println("[INFO] Why do we fall, Bruce? So we can learn to pick ourselves up again...");
-						System.out.println("[ERROR] Exit message: "+channel.getErrStream());
+						//System.out.println("[ERROR] Exit message: "+channel.getErrStream());
 	      	  			System.exit(0);
 	      	  		}
 	      	    	break;
