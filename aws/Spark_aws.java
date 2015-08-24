@@ -200,9 +200,11 @@ public class Spark_aws
 			session.connect();
 			System.out.println("[INFO] Connected to the instance...");
 			execute_command_aws(session, "wget http://mirrors.gigenet.com/apache/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz;");
-			execute_command_aws(session, "tar -zxf apache-maven-3.3.3-bin.tar.gz; mv apache-maven-3.2.3 /usr/local/;");
+			execute_command_aws(session, "tar -zxf apache-maven-3.3.3-bin.tar.gz;");
 			System.out.println("[INFO] Extraction of maven tar file successfull");
-			execute_command_aws(session, "cd /usr/local/; sudo ln -s apache-maven-3.2.3 maven;");
+			execute_command_aws(session, "sudo mv apache-maven-3.3.3 /usr/local/;");
+			System.out.println("[INFO] maven moved to /usr/local directory");
+			execute_command_aws(session, "cd /usr/local/; sudo ln -s apache-maven-3.3.3 maven;");
 			System.out.println("[INFO] sudo operation performed successfully");
 			execute_command_aws(session, "cd /etc/profile.d/; sudo echo \"\" > maven.sh; sudo echo \"export M2_HOME=/usr/local/maven\" >> maven.sh; sudo echo \"export M2=$M2_HOME/bin\" >> maven.sh; sudo echo \"PATH=$M2:$PATH\" >> maven.sh");
 
@@ -488,7 +490,7 @@ public class Spark_aws
 	      	  		else
 	      	  		{
 	      	  			System.out.println("[ERROR] Command failed with exit-status: "+channel.getExitStatus());
-	      	  			//System.out.println("[INFO] Why do we fall, Bruce? So we can learn to pick ourselves up again...");
+	      	  			System.out.println("[INFO] Why do we fall, Bruce? So we can learn to pick ourselves up again...");
 						//System.out.println("[ERROR] Exit message: "+channel.getErrStream());
 	      	  			System.exit(0);
 	      	  		}
