@@ -205,9 +205,11 @@ public class Spark_aws
 			execute_command_aws(session, "sudo mv apache-maven-3.3.3 /usr/local/;");
 			System.out.println("[INFO] maven moved to /usr/local directory");
 			execute_command_aws(session, "cd /usr/local/; sudo ln -s apache-maven-3.3.3 maven;");
-			System.out.println("[INFO] sudo operation performed successfully");
-			execute_command_aws(session, "cd /etc/profile.d/; sudo echo \"\" > maven.sh; sudo echo \"export M2_HOME=/usr/local/maven\" >> maven.sh; sudo echo \"export M2=$M2_HOME/bin\" >> maven.sh; sudo echo \"PATH=$M2:$PATH\" >> maven.sh");
-
+			System.out.println("[INFO] Created symlink for apache-maven-3.3.3 to maven");
+			execute_command_aws(session, "cd /etc/profile.d/; sudo touch maven.sh;");
+			System.out.println("[INFO] Maven script to import statements at login time created");
+			execute_command_aws(session, "cd /etc/profile.d/; echo 'export M2_HOME=/usr/local/maven' | sudo tee --append maven.sh; echo 'export M2=$M2_HOME/bin' | sudo tee --append maven.sh; echo 'export PATH=$M2:$PATH' | sudo tee --append maven.sh");
+			System.out.println("[INFO] Maven environment variables added");
 			session.disconnect();
 			System.out.println("[INFO] Session disconnected...");
 		}
