@@ -261,6 +261,9 @@ public class Spark_aws
 			execute_command_aws(session, "cd dbpedia/distributed-extraction-framework; mvn clean install -Dmaven.test.skip=true;");
 			System.out.println("[INFO] Distributed extraction framework built successfully");
 
+			System.out.println("[INFO] Generating public ssh keys...");
+			execute_command_aws(session, "ssh-keygen -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N \"\";");
+
 			System.out.println("[INFO] Going to run the download module...");
 			execute_command_aws(session, "cd dbpedia/distributed-extraction-framework; ./run download distconfig=download/src/test/resources/dist-download.properties config=download/src/test/resources/download.properties;");
 
