@@ -40,20 +40,20 @@ import java.util.*;
 public class Spark_aws
 {
 	private static final Logger log = Logger.getLogger(Spark_aws.class.getName());
-	private String privateKeyFile="";
-	private String key_name="";
-	private String username="";
-	private String hostname="";
-	private String instance_id1="";
-	private String instance_type="";
-	private String security_groups="";
-	private String image_id="";
-	private String cluster_name="";
-	private String ami_version="";
-	private String application_name="";
-	private String cluster_id = "";
-	private long SETUP_INTERVAL= 1000;
-	private int instance_count = 1;
+	private static String private staticKeyFile="";
+	private static String key_name="";
+	private static String username="";
+	private static String hostname="";
+	private static String instance_id1="";
+	private static String instance_type="";
+	private static String security_groups="";
+	private static String image_id="";
+	private static String cluster_name="";
+	private static String ami_version="";
+	private static String application_name="";
+	private static String cluster_id = "";
+	private static long SETUP_INTERVAL= 1000;
+	private static int instance_count = 1;
 	private Session session;
 
 	/**
@@ -200,16 +200,22 @@ public class Spark_aws
 			session.connect();
 			System.out.println("[INFO] Connected to the instance...");
 			execute_command_aws(session, "wget http://mirrors.gigenet.com/apache/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz;");
+
 			execute_command_aws(session, "tar -zxf apache-maven-3.3.3-bin.tar.gz;");
 			System.out.println("[INFO] Extraction of maven tar file successfull");
+
 			execute_command_aws(session, "sudo mv apache-maven-3.3.3 /usr/local/;");
 			System.out.println("[INFO] maven moved to /usr/local directory");
+
 			execute_command_aws(session, "cd /usr/local/; sudo ln -s apache-maven-3.3.3 maven;");
 			System.out.println("[INFO] Created symlink for apache-maven-3.3.3 to maven");
+
 			execute_command_aws(session, "cd /etc/profile.d/; sudo touch maven.sh;");
 			System.out.println("[INFO] Maven script to import statements at login time created");
+
 			execute_command_aws(session, "cd /etc/profile.d/; echo 'export M2_HOME=/usr/local/maven' | sudo tee --append maven.sh; echo 'export M2=$M2_HOME/bin' | sudo tee --append maven.sh; echo 'export PATH=$M2:$PATH' | sudo tee --append maven.sh");
 			System.out.println("[INFO] Maven environment variables added");
+
 			session.disconnect();
 			System.out.println("[INFO] Session disconnected...");
 		}
