@@ -40,20 +40,20 @@ import java.util.*;
 public class Spark_aws
 {
 	private static final Logger log = Logger.getLogger(Spark_aws.class.getName());
-	private static String private staticKeyFile="";
-	private static String key_name="";
-	private static String username="";
-	private static String hostname="";
-	private static String instance_id1="";
-	private static String instance_type="";
-	private static String security_groups="";
-	private static String image_id="";
-	private static String cluster_name="";
-	private static String ami_version="";
-	private static String application_name="";
-	private static String cluster_id = "";
-	private static long SETUP_INTERVAL= 1000;
-	private static int instance_count = 1;
+	private String privateKeyFile="";
+	private String key_name="";
+	private String username="";
+	private String hostname="";
+	private String instance_id1="";
+	private String instance_type="";
+	private String security_groups="";
+	private String image_id="";
+	private String cluster_name="";
+	private String ami_version="";
+	private String application_name="";
+	private String cluster_id = "";
+	private long SETUP_INTERVAL= 1000;
+	private int instance_count = 1;
 	private Session session;
 
 	/**
