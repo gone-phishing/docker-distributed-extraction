@@ -238,34 +238,35 @@ public class Spark_aws
 			System.out.println("[INFO] Checking maven version installed...");
 			execute_command_aws(session, "mvn -version");
 
-			execute_command_aws(session, "mkdir dbpedia;");
-			System.out.println("[INFO] Directory named dbpedia created");
+			execute_command_aws(session, "mkdir dbpedia-extraction;");
+			System.out.println("[INFO] Directory named dbpedia-extraction created");
 
-			execute_command_aws(session, "wget --directory-prefix dbpedia/ https://github.com/gone-phishing/distributed-extraction-framework/archive/spark_1.3.0-update.zip");
-			execute_command_aws(session, "cd dbpedia;unzip spark_1.3.0-update.zip;");
+			execute_command_aws(session, "wget --directory-prefix dbpedia-extraction/ https://github.com/gone-phishing/distributed-extraction-framework/archive/spark_1.3.0-update.zip");
+			execute_command_aws(session, "cd dbpedia-extraction;unzip spark_1.3.0-update.zip;");
 			System.out.println("[INFO] Distributed extraction framework file downloaded and extracted");
 
-			execute_command_aws(session, "rm dbpedia/spark_1.3.0-update.zip");
-			execute_command_aws(session, "cd dbpedia; mv distributed-extraction-framework-spark_1.3.0-update distributed-extraction-framework;");
+			execute_command_aws(session, "rm dbpedia-extraction/spark_1.3.0-update.zip");
+			execute_command_aws(session, "cd dbpedia-extraction; mv distributed-extraction-framework-spark_1.3.0-update distributed-extraction-framework;");
 			System.out.println("[INFO] The zip file was removed and the distributed-extraction-framework folder was renamed");
 
 			System.out.println("[INFO] Getting the original extraction framework...");
-			execute_command_aws(session, "cd dbpedia;wget https://github.com/dbpedia/extraction-framework/archive/master.zip;");
-			execute_command_aws(session, "cd dbpedia; unzip master.zip");
+			execute_command_aws(session, "cd dbpedia-extraction;wget https://github.com/dbpedia-extraction/extraction-framework/archive/master.zip;");
+			execute_command_aws(session, "cd dbpedia-extraction; unzip master.zip");
 
 			System.out.println("[INFO] Building the main framework...");
-			execute_command_aws(session, "cd dbpedia/extraction-framework-master/; mvn clean install;");
+			execute_command_aws(session, "cd dbpedia-extraction/extraction-framework-master/; mvn clean install;");
 			System.out.println("[INFO] Main framework was built successfully !! yey !!");
 
 			System.out.println("[INFO] Going to build the distributed extraction framework..." );
-			execute_command_aws(session, "cd dbpedia/distributed-extraction-framework; mvn clean install -Dmaven.test.skip=true;");
+			execute_command_aws(session, "cd dbpedia-extraction/distributed-extraction-framework; mvn clean install -Dmaven.test.skip=true;");
 			System.out.println("[INFO] Distributed extraction framework built successfully");
 
 			System.out.println("[INFO] Generating public ssh keys...");
 			execute_command_aws(session, "ssh-keygen -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N \"\";");
+			execute_command_aws(session, "cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys;");
 
 			System.out.println("[INFO] Going to run the download module...");
-			execute_command_aws(session, "cd dbpedia/distributed-extraction-framework; ./run download distconfig=download/src/test/resources/dist-download.properties config=download/src/test/resources/download.properties;");
+			execute_command_aws(session, "cd dbpedia-extraction/distributed-extraction-framework; ./run download distconfig=download/src/test/resources/dist-download.properties config=download/src/test/resources/download.properties;");
 
 			System.out.println("[INFO] If you don't imagine, nothing ever happens at all :)");
 			session.disconnect();
