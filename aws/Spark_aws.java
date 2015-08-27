@@ -154,7 +154,7 @@ public class Spark_aws
 			this.hostname = public_dns_name;
 
 			System.out.println("[INFO] Adding instance name tag");
-			add_instance_tags(instance_id1,"Name","Deploy_Test10");
+			add_instance_tags(instance_id1,"Name","Deploy_Test12");
 
 			System.out.println("[INFO] Runing commands on instance...");
 			run_single_instance();
@@ -328,7 +328,7 @@ public class Spark_aws
 	 */
 	public String launch_single_instance(String image_id)
 	{
-		String command = "aws ec2 run-instances --image-id "+image_id+" --count "+instance_count+" --instance-type "+instance_type+" --key-name "+key_name ;
+		String command = "aws ec2 run-instances --image-id "+image_id+" --count "+instance_count+" --instance-type "+instance_type+" --key-name "+key_name+" --debug" ;
 		System.out.println("Command: "+command);
 		String result[] = execute_command_shell(command);
 		if(!result[0].equals("0"))
