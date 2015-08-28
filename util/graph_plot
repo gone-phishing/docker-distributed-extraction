@@ -1,7 +1,7 @@
 set terminal jpeg
 set grid
 set autoscale
-set xtic auto
+set xtic 1
 set ytic auto
 set key left top
 
@@ -9,13 +9,13 @@ set title "Distributed Download Performance"
 set xlabel "No. of cluster nodes"
 set ylabel "Time taken(sec)"
 set output "dist_download.jpg"
-plot "time.dat" using 1:2:(sprintf("[%.0f,%.3f]",$1,$2)) with labels right offset -1,0 title '', "time.dat" using 1:2 with linespoints title 'Cluster setup'
+plot "time.dat" using 1:2:(sprintf("[%.0f,%.2f]",$1,$2)) with labels right offset 0,-1 title '', "time.dat" using 1:2 with linespoints title 'Cluster download'
 
 set title "Distributed Extraction Performance"
 set xlabel "No. of cluster nodes"
 set ylabel "Time taken(sec)"
 set output "dist_extraction.jpg"
-plot "time.dat" using 1:2:(sprintf("[%.0f,%.3f]",$1,$2)) with labels right offset -1,0 title '', "time.dat" using 1:2 with linespoints title 'Single System'
+plot "time.dat" using 1:2:(sprintf("[%.0f,%.2f]",$1,$2)) with labels right offset 0,-1 title '', "time.dat" using 1:2 with linespoints title 'Cluster extration'
 
 !mkdir images
 !mv *.jpg images/
