@@ -5,17 +5,20 @@ set xtic 1
 set ytic auto
 set key left top
 
+# Setting params for distributed download benchmark
 set title "Distributed Download Performance"
 set xlabel "No. of cluster nodes"
 set ylabel "Time taken(sec)"
 set output "dist_download.jpg"
 plot "time.dat" using 1:2:(sprintf("[%.0f,%.2f]",$1,$2)) with labels right offset 0,-1 title '', "time.dat" using 1:2 with linespoints title 'Cluster download'
 
+# Setting params for distributed extraction benchmark
 set title "Distributed Extraction Performance"
 set xlabel "No. of cluster nodes"
 set ylabel "Time taken(sec)"
 set output "dist_extraction.jpg"
 plot "time.dat" using 1:2:(sprintf("[%.0f,%.2f]",$1,$2)) with labels right offset 0,-1 title '', "time.dat" using 1:2 with linespoints title 'Cluster extration'
 
+# Executing shell commands
 !mkdir images
 !mv *.jpg images/
