@@ -46,5 +46,5 @@ initiate3=$(date +%s.%N)
 #java -version # For test use
 terminate3=$(date +%s.%N)
 diff3=$(echo "$terminate3 - $initiate3" | bc)
-echo "Total time for extraction : " $diff2 "seconds"
+echo "Total time for extraction : " $diff3 "seconds"
 echo ""
